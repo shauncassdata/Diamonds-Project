@@ -1,4 +1,5 @@
 library(tidyverse)
+library(GGally)
 
 diamonds <- read_csv(file = "Data/diamonds.csv")
 
@@ -168,5 +169,83 @@ diamonds$z[diamonds$id %in% zhigh_ids] <- diamonds %>%
   
   
 summary(diamonds)
+
+# Examine scatter plots of x, y, and z to see if there are
+# anymore obvious incorrect values 
+
+diamonds %>%
+  select(x, y, z) %>%
+  ggpairs()
+
+# Looks like there may be a few x and ys that are far apart
+# however the difference is not so extreme.
+# It may just be due to natural variation
+
+# Looking at x and y values that are more than 2 sd of the difference apart
+diamonds %>%
+  filter(abs(x - y) > 0.12) # There are a fair amount
+
+# How about 3 sds apart?
+
+diamonds %>%
+  filter(abs(x - y) > 0.18)
+
+# 4?
+
+diamonds %>%
+  filter(abs(x - y) > 0.24)
   
+
+  
+# Depth should be depth = 2 * z/(x+y)
+# depth is in percentage so it would also be * 100
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(depth != temp_depth) %>%
+  select(depth, temp_depth, x, y, z) #3,768 rows
+
+# Looks to be just slight rounding errors of some kind
+# can plot it out to make sure
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(depth != temp_depth) %>%
+  ggally_points(aes(x = temp_depth, y = depth))
+# Looks to be some extreme outliers
+
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs(temp_depth - depth) >= 1) %>%
+  count() # 78
+
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs(temp_depth - depth) >= 10) %>%
+  count() # 15
+
+# Since the number of extreme differences between the formula for depth percentage
+# and the recorded value of depth percentage is relatively low we will just
+# use the formula for the depth column to maintain consistency.
+## depth percentage is inherently a transformation of x, y, and z so we are not
+## changing the values of a recorded value, rather we are ensuring the
+## transformation is consistent across the entire column.
+### using complete.cases() here to not affect the rows with x, y, z = NA
+
+diamonds$depth[complete.cases(diamonds)] <- diamonds %>%
+  filter(complete.cases(diamonds)) %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  pull(temp_depth)
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
