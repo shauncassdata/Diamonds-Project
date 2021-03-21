@@ -14,12 +14,9 @@ diamonds <- diamonds %>%
 glimpse(diamonds)
 summary(diamonds)
 
-
 # No NA values so far that I can see
 
 # Let us make sure the character columns are the correct data type.
-
-
 
 unique(diamonds$cut)
 # This should be an ordered factor
@@ -235,7 +232,17 @@ diamonds$depth[complete.cases(diamonds)] <- diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   pull(temp_depth)
 
-  
+
+# Table is actually a percentage: The table width/the total width
+range(diamonds$table)
+
+# This range seems acceptable. We don't have the actual table width in mm
+# so we cannot confirm this percentage like we could for the depth percentage
+
+
+# save updated dataset
+
+save(diamonds, file = "Data/updated_diamonds.Rda")
 
 
 
