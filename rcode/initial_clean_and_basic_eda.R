@@ -244,6 +244,7 @@ range(diamonds$table)
 
 save(diamonds, file = "Data/updated_diamonds.Rda")
 
+rm(list=ls())
 
 
 
