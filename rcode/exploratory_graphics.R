@@ -7,9 +7,9 @@ load(file = "Data/updated_diamonds.Rda")
 
 diamonds %>%
   ggplot(aes(x = carat)) +
-  geom_histogram(aes(y = ..density..), binwidth = 0.1) +
-  geom_density(col = "red") +
-  ggtitle("Distribution of the Diamonds' Weight (Carat)")
+  geom_density(size = 1.2, alpha = 0.5, fill = "red3") +
+  ggtitle("Distribution of the Diamonds' Weight (Carat)") +
+  theme_minimal()
 
 diamonds %>%
   ggplot(aes(x = cut)) +
@@ -33,26 +33,54 @@ diamonds %>%
 
 diamonds %>%
   ggplot(aes(x = depth)) +
-  geom_histogram(aes(y = ..density..), binwidth = 0.1) +
-  geom_density(col = "green") +
+  geom_density(size = 1.2, alpha = 0.5, fill = "violet") +
   ggtitle("Distribution of the Diamonds' Depth Percentage") +
-  xlab("Depth (%)")
+  xlab("Depth (%)") +
+  theme_minimal()
 
 diamonds %>%
-  ggplot(aes(x = table)) +
-  geom_histogram(aes(y = ..density..), binwidth = 1) +
-  geom_density(col = "blue") +
+  ggplot(aes(x = table))  +
+  geom_density(size = 1.2, alpha = 0.5, fill = "royalblue3") +
   ggtitle("Distribution of the Diamonds' Table Percentage") +
-  xlab("Table (%)")
+  xlab("Table (%)") +
+  theme_minimal()
 
 
+## Dropping the 8 rows that have NA values for either x, y, or z
+diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = x)) +
+  geom_density(fill = "turquoise3", alpha = 0.5) +
+  ggtitle("Distribution of the Diamonds' Length") +
+  xlab("x (mm)") +
+  theme_minimal()
+  
+diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = y)) +
+  geom_density(fill = "deeppink3", alpha = 0.5) +
+  ggtitle("Distribution of the Diamonds' Width") +
+  xlab("y (mm)") +
+  theme_minimal()
 
 
+diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = z)) +
+  geom_density(fill = "palegreen3", alpha = 0.5) +
+  ggtitle("Distribution of the Diamonds' Depth") +
+  xlab("z (mm)") +
+  theme_minimal()  
 
 
 # Bivariate graphs
 
-
+diamonds %>%
+  select(-id) %>%
+  ggpairs()
 
 
 # Trivariate graphs
