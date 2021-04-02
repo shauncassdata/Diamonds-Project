@@ -7,7 +7,8 @@ load(file = "Data/updated_diamonds.Rda")
 
 diamonds %>%
   ggplot(aes(x = carat)) +
-  geom_density(size = 1.2, alpha = 0.5, fill = "red3") +
+  geom_histogram(aes(y=..density..)) +
+  geom_density(size = 1.05, color = "red3") +
   ggtitle("Distribution of the Diamonds' Weight (Carat)") +
   theme_minimal()
 
@@ -33,14 +34,16 @@ diamonds %>%
 
 diamonds %>%
   ggplot(aes(x = depth)) +
-  geom_density(size = 1.2, alpha = 0.5, fill = "violet") +
+  geom_histogram(aes(y=..density..), binwidth = 0.1) +
+  geom_density(size = 1.05, color = "violet") +
   ggtitle("Distribution of the Diamonds' Depth Percentage") +
   xlab("Depth (%)") +
   theme_minimal()
 
 diamonds %>%
   ggplot(aes(x = table))  +
-  geom_density(size = 1.2, alpha = 0.5, fill = "royalblue3") +
+  geom_histogram(aes(y=..density..), bins = 100) +
+  geom_density(size = 1.05,color = "green4") +
   ggtitle("Distribution of the Diamonds' Table Percentage") +
   xlab("Table (%)") +
   theme_minimal()
