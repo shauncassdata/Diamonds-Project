@@ -81,6 +81,7 @@ diamonds %>%
   ggtitle("Distribution of the Diamonds' Length") +
   xlab("x (mm)") +
   ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
   theme_minimal()
   
 diamonds %>%
@@ -91,6 +92,7 @@ diamonds %>%
   ggtitle("Distribution of the Diamonds' Width") +
   xlab("y (mm)") +
   ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
   theme_minimal()
 
 
@@ -102,6 +104,7 @@ diamonds %>%
   ggtitle("Distribution of the Diamonds' Depth") +
   xlab("z (mm)") +
   ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
   theme_minimal()  
 
 
