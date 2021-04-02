@@ -7,10 +7,10 @@ load(file = "Data/updated_diamonds.Rda")
 
 diamonds %>%
   ggplot(aes(x = carat)) +
-  geom_histogram(aes(y=..density..)) +
+  geom_histogram(aes(y=..density..), fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05, color = "red3") +
   ggtitle("Distribution of the Diamonds' Weight (Carat)") +
-  theme_minimal()
+  theme_minimal() 
 
 diamonds %>%
   ggplot(aes(x = cut)) +
@@ -34,7 +34,8 @@ diamonds %>%
 
 diamonds %>%
   ggplot(aes(x = depth)) +
-  geom_histogram(aes(y=..density..), binwidth = 0.1) +
+  geom_histogram(aes(y=..density..), binwidth = 0.1,
+                 fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05, color = "violet") +
   ggtitle("Distribution of the Diamonds' Depth Percentage") +
   xlab("Depth (%)") +
@@ -42,10 +43,20 @@ diamonds %>%
 
 diamonds %>%
   ggplot(aes(x = table))  +
-  geom_histogram(aes(y=..density..), bins = 100) +
+  geom_histogram(aes(y=..density..), bins = 100,
+                 fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05,color = "green4") +
   ggtitle("Distribution of the Diamonds' Table Percentage") +
   xlab("Table (%)") +
+  theme_minimal()
+
+
+diamonds %>%
+  ggplot(aes(x = price)) +
+  geom_histogram(aes(y=..density..), bins = 5000,
+                 fill = "steelblue", alpha = 0.5) +
+  geom_density(size = 1.05,color = "violetred2") +
+  ggtitle("Distribution of the Diamonds' Price") +
   theme_minimal()
 
 
