@@ -227,13 +227,13 @@ diamonds %>%
 
 diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
-  filter(abs(temp_depth - depth) >= 1) %>%
-  count() # 78
+  filter(abs((temp_depth - depth)/depth) >= 0.01) %>%
+  count() # 120 in total with a 1% difference between the two
 
 diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
-  filter(abs(temp_depth - depth) >= 10) %>%
-  count() # 15
+  filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
+  count() # 18 in total with a 10% difference between the two.
 
 # Since the number of extreme differences between the formula for depth percentage
 # and the recorded value of depth percentage is relatively low we will just
