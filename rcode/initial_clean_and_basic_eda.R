@@ -259,7 +259,7 @@ diamonds$depth[complete.cases(diamonds)] <- diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   pull(temp_depth)
 
-
+range(diamonds$depth)
 # Table is actually a percentage: The table width/the total width
 range(diamonds$table)
 
