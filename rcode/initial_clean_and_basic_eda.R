@@ -222,7 +222,13 @@ diamonds %>%
 diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   filter(depth != temp_depth) %>%
-  ggally_points(aes(x = temp_depth, y = depth))
+  ggally_points(aes(x = temp_depth, y = depth)) +
+  xlab("Calculated Depth Percentage") +
+  ylab("Recorded Depth Percentage") +
+  ggtitle("Recorded vs. Calculated Depth Percentage") +
+  theme_minimal()
+
+ggsave(filename = "Figures/recorded_calculated_depth_percentage.png", dpi = 320)
 # Looks to be some extreme outliers
 
 diamonds %>%
@@ -234,6 +240,11 @@ diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
   count() # 18 in total with a 10% difference between the two.
+
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
+  select(carat, depth, temp_depth, x, y, z)
 
 # Since the number of extreme differences between the formula for depth percentage
 # and the recorded value of depth percentage is relatively low we will just
