@@ -9,12 +9,16 @@ diamonds %>%
   ggplot(aes(x = carat)) +
   geom_histogram(aes(y=..density..), fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05, color = "red3") +
+  xlab("Weight (carat)") +
+  ylab("Density") +
   ggtitle("Distribution of the Diamonds' Weight (Carat)") +
   theme_minimal() 
 
 diamonds %>%
   ggplot(aes(x = cut)) +
   geom_bar() +
+  xlab("Cut") +
+  ylab("Count") +
   ggtitle("Number of Diamonds Per Cut Type", subtitle = "Sorted from worst (Fair) to best (Ideal)")
 ## There are very few diamonds that are a "Fair" cut type
 
@@ -22,6 +26,8 @@ diamonds %>%
 diamonds %>%
   ggplot(aes(x = color)) +
   geom_bar() +
+  xlab("Color") +
+  ylab("Count") +
   ggtitle("Number of Diamonds Per Color Type", subtitle = "Sorted from worst (J) to best (D)")
 ## Distribution of Color Type is pretty close to uniform for G, F, and E. 
 ## A lot less of J color type compared to the rest.
@@ -29,6 +35,8 @@ diamonds %>%
 diamonds %>%
   ggplot(aes(x = clarity)) +
   geom_bar() +
+  xlab("Clarity") +
+  ylab("Count") +
   ggtitle("Number of Diamonds Per Clarity Type", subtitle = "Sorted from worst (I1) to best (IF)")
 ## There are an extremely small amont of I1 compared to all the other clarity types
 
@@ -39,6 +47,7 @@ diamonds %>%
   geom_density(size = 1.05, color = "violet") +
   ggtitle("Distribution of the Diamonds' Depth Percentage") +
   xlab("Depth (%)") +
+  ylab("Density") +
   theme_minimal()
 
 diamonds %>%
@@ -48,6 +57,7 @@ diamonds %>%
   geom_density(size = 1.05,color = "green4") +
   ggtitle("Distribution of the Diamonds' Table Percentage") +
   xlab("Table (%)") +
+  ylab("Density") +
   theme_minimal()
 
 
@@ -57,6 +67,8 @@ diamonds %>%
                  fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05,color = "violetred2") +
   ggtitle("Distribution of the Diamonds' Price") +
+  xlab("Price (US Dollars)") +
+  ylab("Density") +
   theme_minimal()
 
 
@@ -68,6 +80,7 @@ diamonds %>%
   geom_density(fill = "turquoise3", alpha = 0.5) +
   ggtitle("Distribution of the Diamonds' Length") +
   xlab("x (mm)") +
+  ylab("Density") +
   theme_minimal()
   
 diamonds %>%
@@ -77,6 +90,7 @@ diamonds %>%
   geom_density(fill = "deeppink3", alpha = 0.5) +
   ggtitle("Distribution of the Diamonds' Width") +
   xlab("y (mm)") +
+  ylab("Density") +
   theme_minimal()
 
 
@@ -87,6 +101,7 @@ diamonds %>%
   geom_density(fill = "palegreen3", alpha = 0.5) +
   ggtitle("Distribution of the Diamonds' Depth") +
   xlab("z (mm)") +
+  ylab("Density") +
   theme_minimal()  
 
 
