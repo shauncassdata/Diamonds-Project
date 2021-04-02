@@ -200,7 +200,15 @@ diamonds %>%
 diamonds %>%
   filter(abs(x - y) > 0.24)
   
+diamonds %>%
+  ggplot(aes(x = abs(x - y))) + geom_histogram(bins = 100)
+diamonds %>%
+  ggplot(aes(x = x/y)) + geom_histogram(bins = 100)
 
+range(abs(diamonds$x - diamonds$y), na.rm = TRUE)
+range(diamonds$x/diamonds$y, na.rm = TRUE)
+# These all seem reasonable 
+  
   
 # Depth should be depth = 2 * z/(x+y)
 # depth is in percentage so it would also be * 100
