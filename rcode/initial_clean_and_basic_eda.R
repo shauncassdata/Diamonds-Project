@@ -78,6 +78,14 @@ diamonds %>%
 # For the rows where x, y, and depth percentage are nonzero, but z = 0
 # we can use the definition of depth percentage to replace z = 0
 
+## Confirm how many digits for x, y, z, and depth percentage first
+
+all(round(diamonds$x, 2) == diamonds$x)
+all(round(diamonds$y, 2) == diamonds$y)
+all(round(diamonds$z, 2) == diamonds$z)
+all(round(diamonds$depth, 1) == diamonds$depth)
+### All true.
+
 diamonds$z[diamonds$x != 0 & diamonds$y != 0 & diamonds$z == 0] <- diamonds %>%
   filter(x != 0 & y != 0 & z == 0) %>%
   mutate(temp_z = round((depth * (x + y)) / (2*100), 2)) %>%
