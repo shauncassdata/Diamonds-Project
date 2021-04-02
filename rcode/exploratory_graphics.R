@@ -70,6 +70,7 @@ diamonds %>%
   xlab("Price (US Dollars)") +
   ylab("Density") +
   theme_minimal()
+## Price is really right skewed. 
 
 
 ## Dropping the 8 rows that have NA values for either x, y, or z
@@ -111,8 +112,45 @@ diamonds %>%
 # Bivariate graphs
 
 diamonds %>%
-  select(-id) %>%
-  ggpairs()
+  select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
+  pairs(main = "Scatterplots of Continuous Variables in Diamonds")
+# With price being really right skewed it would probably be best to
+# log transform it
+
+
+
+## correlation plot
+diamonds %>%
+  select(price, carat, depth, table, x, y, z) %>%
+  ggcorr(label = TRUE) +
+  ggtitle("Pearson Correlation of Continuous Variables in Diamonds")
+
+
+## boxplots
+diamonds %>%
+  ggplot(aes(x = cut, y = log(price))) +
+  geom_boxplot() +
+  xlab("Cut") +
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Distribution of log Price for each Cut of Diamond") +
+  theme_minimal()
+
+diamonds %>%
+  ggplot(aes(x = color, y = log(price))) +
+  geom_boxplot() +
+  xlab("Color") +
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Distribution of log Price for each Color of Diamond") +
+  theme_minimal()
+
+diamonds %>%
+  ggplot(aes(x = clarity, y = log(price))) +
+  geom_boxplot() +
+  xlab("Clarity") +
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Distribution of log Price for each Clarity of Diamond") +
+  theme_minimal()
 
 
 # Trivariate graphs
