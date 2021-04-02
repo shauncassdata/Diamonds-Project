@@ -246,18 +246,16 @@ diamonds %>%
   filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
   select(carat, depth, temp_depth, x, y, z)
 
-# Since the number of extreme differences between the formula for depth percentage
-# and the recorded value of depth percentage is relatively low we will just
-# use the formula for the depth column to maintain consistency.
-## depth percentage is inherently a transformation of x, y, and z so we are not
-## changing the values of a recorded value, rather we are ensuring the
-## transformation is consistent across the entire column.
-### using complete.cases() here to not affect the rows with x, y, z = NA
+# Depth percentage is inherently a transformation of the x, y, and z values.
+# It would make sense to adjust for depth percentage values by using the
+# calculated depth percentage instead of the recorded value.
+# However, the main reponse variable I am investigating is price and the 
+# recorded depth percentage may have more of an effect on price than any of 
+# the single measures (length, width, and depth) alone. 
+# Because of this I have opted not to replace the recorded values of depth 
+# percentage with the calculated values of depth percentage.
 
-diamonds$depth[complete.cases(diamonds)] <- diamonds %>%
-  filter(complete.cases(diamonds)) %>%
-  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
-  pull(temp_depth)
+
 
 range(diamonds$depth)
 # Table is actually a percentage: The table width/the total width
