@@ -123,6 +123,7 @@ diamonds %>%
 ## correlation plot
 diamonds %>%
   select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
   ggcorr(label = TRUE) +
   ggtitle("Pearson Correlation of Continuous Variables in Diamonds")
 
