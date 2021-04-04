@@ -9,7 +9,7 @@ diamonds %>%
   ggplot(aes(x = carat)) +
   geom_histogram(aes(y=..density..), fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05, color = "red3") +
-  xlab("Weight (carat)") +
+  xlab("Carat") +
   ylab("Density") +
   ggtitle("Distribution of the Diamonds' Weight (Carat)") +
   theme_minimal() 
@@ -118,6 +118,24 @@ diamonds %>%
 # With price being really right skewed it would probably be best to
 # log transform it
 
+diamonds %>%
+  ggplot(aes(carat, price)) +
+  geom_point() +
+  xlab("Carat") +
+  ylab("Price (US Dollars)") +
+  ggtitle("Price vs. Carat") +
+  theme_minimal()
+
+diamonds %>%
+  ggplot(aes(log(carat), log(price))) +
+  geom_point() +
+  xlab("log(Carat)") +
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("log(Price) vs. log(Carat)") +
+  theme_minimal()
+
+
+
 
 
 ## correlation plot
@@ -130,11 +148,27 @@ diamonds %>%
 
 ## boxplots
 diamonds %>%
+  ggplot(aes(x = cut, y = price)) +
+  geom_boxplot() +
+  xlab("Cut") +
+  ylab("Price (US Dollars)") +
+  ggtitle("Distribution of  Price for each Cut of Diamond") +
+  theme_minimal()
+
+diamonds %>%
   ggplot(aes(x = cut, y = log(price))) +
   geom_boxplot() +
   xlab("Cut") +
   ylab("log(Price) (log US Dollars)") +
   ggtitle("Distribution of log Price for each Cut of Diamond") +
+  theme_minimal()
+
+diamonds %>%
+  ggplot(aes(x = color, y = price)) +
+  geom_boxplot() +
+  xlab("Color") +
+  ylab("Price (US Dollars)") +
+  ggtitle("Distribution of Price for each Color of Diamond") +
   theme_minimal()
 
 diamonds %>%
@@ -146,11 +180,19 @@ diamonds %>%
   theme_minimal()
 
 diamonds %>%
-  ggplot(aes(x = clarity, y = log(price))) +
+  ggplot(aes(x = clarity, y = price)) +
+  geom_boxplot() +
+  xlab("Clarity") +
+  ylab("Price (US Dollars)") +
+  ggtitle("Distribution of Price for each Clarity of Diamond") +
+  theme_minimal()
+
+diamonds %>%
+  ggplot(aes(x = clarity, y = price)) +
   geom_boxplot() +
   xlab("Clarity") +
   ylab("log(Price) (log US Dollars)") +
-  ggtitle("Distribution of log Price for each Clarity of Diamond") +
+  ggtitle("Distribution of Price for each Clarity of Diamond") +
   theme_minimal()
 
 
@@ -168,6 +210,7 @@ diamonds %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
   
 ggsave(filename = "Figures/cutclaritycolor.png", height = 8, width = 8, dpi = 320)
+
 
 
 
