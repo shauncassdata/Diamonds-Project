@@ -38,7 +38,19 @@ train_data %>%
 
 
 
+# Building a recipe
+## Going to use a bagged trees imputation method to deal with missing values
+## in x, y, and z.
+### By using a recipe, we can impute missing values in the test set the
+### the exact same way we did for the training set.
 
+diamonds_rec <- recipe(price ~ ., data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  # Also depth is a calculation based on x, y, and z.
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, depth, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_normalize(all_predictors())
   
   
   
