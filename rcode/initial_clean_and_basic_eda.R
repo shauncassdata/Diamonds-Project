@@ -8,6 +8,8 @@ diamonds <- read_csv(file = "Data/diamonds.csv")
 diamonds <- diamonds %>%
   rename(id = X1)
 
+# Make sure no duplicate ids
+sum(duplicated(diamonds$id)) # 0
 
 # Check the quality of the data and make sure variables fit their definition
 
