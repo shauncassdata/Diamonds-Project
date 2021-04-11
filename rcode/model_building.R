@@ -48,7 +48,7 @@ train_data %>%
 train_data %>%
   mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(log_carat, log_price, color = cut)) +
+  ggplot(aes(x = log_carat, y = log_price, color = cut)) +
   geom_point() +
   geom_smooth(method = "lm") +
   xlab("log(Carat)")+
@@ -59,7 +59,7 @@ train_data %>%
 train_data %>%
   mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(log_carat, log_price, color = color)) +
+  ggplot(aes(x = log_carat, y = log_price, color = color)) +
   geom_point() +
   geom_smooth(method = "lm") +
   xlab("log(Carat)")+
@@ -71,7 +71,7 @@ train_data %>%
 train_data %>%
   mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(log_carat, log_price, color = clarity)) +
+  ggplot(aes(x = log_carat, y = log_price, color = clarity)) +
   geom_point() +
   geom_smooth(method = "lm") +
   xlab("log(Carat)")+
@@ -79,8 +79,98 @@ train_data %>%
   ggtitle("Simple log(Carat)*Clarity Interaction Plot") +
   theme_minimal()
 
+
+
 # All three suggest that there may be some interactions, 
 # however the log(Carat)*Color interaction looks to be the weakest
+
+## See if it is feasible to construct confidence intervals for the next 
+## interaction plots
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            total_n = n()) %>%
+  arrange(total_n) # minimum n is 89
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, clarity) %>%
+  summarise(mean_log_price = mean(log_price),
+            total_n = n()) %>%
+  arrange(total_n) # minimum n is 7
+## Because this sample size is so low, we may opt to not construct t-intervals
+## for some of these categorical combinations
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(clarity, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            total_n = n()) %>%
+  arrange(total_n) # min n is 33
+
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            sd_log_price = sd(log_price),
+            total_n = n()) %>%
+  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
+                    ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
+  geom_line() +
+  theme_minimal() +
+  scale_colour_brewer(type = "qual", palette = 3)
+
+## let us inspect just J and H
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            sd_log_price = sd(log_price),
+            total_n = n()) %>%
+  filter(color %in% c("J", "H")) %>%
+  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
+                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
+  geom_line() +
+  theme_minimal() +
+  scale_colour_brewer(type = "qual", palette = 3)
+
+## let us also inspect H and G
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            sd_log_price = sd(log_price),
+            total_n = n()) %>%
+  filter(color %in% c("G", "H")) %>%
+  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
+                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
+  geom_line() +
+  theme_minimal() +
+  scale_colour_brewer(type = "qual", palette = 3)
+
+## and E and D
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  group_by(cut, color) %>%
+  summarise(mean_log_price = mean(log_price),
+            sd_log_price = sd(log_price),
+            total_n = n()) %>%
+  filter(color %in% c("E", "D")) %>%
+  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
+  geom_point() +
+  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
+                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
+  geom_line() +
+  theme_minimal() +
+  scale_colour_brewer(type = "qual", palette = 3)
 
 # Building a recipe
 ## Going to use a bagged trees imputation method to deal with missing values
