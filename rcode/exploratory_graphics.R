@@ -195,6 +195,49 @@ diamonds %>%
   ggtitle("Distribution of Price for each Clarity of Diamond") +
   theme_minimal()
 
+## Heatmaps
+diamonds %>%
+  group_by(cut, color) %>%
+  summarise(n_part = n()) %>%
+  group_by(cut) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = cut, y = color, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Cut") +
+  ylab("Color") +
+  ggtitle("Proportion of Total Data for Each Color and Cut") +
+  scale_size(name = "Proportion of \nTotal Data")
+
+diamonds %>%
+  group_by(cut, clarity) %>%
+  summarise(n_part = n()) %>%
+  group_by(cut) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = cut, y = clarity, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Cut") +
+  ylab("Clarity") +
+  ggtitle("Proportion of Total Data for Each Clarity and Cut") +
+  scale_size(name = "Proportion of \nTotal Data")
+
+diamonds %>%
+  group_by(color, clarity) %>%
+  summarise(n_part = n()) %>%
+  group_by(color) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = color, y = clarity, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Color") +
+  ylab("Clarity") +
+  ggtitle("Proportion of Total Data for Each Clarity and Color") +
+  scale_size(name = "Proportion of \nTotal Data")
+
 
 # Trivariate graphs
 
