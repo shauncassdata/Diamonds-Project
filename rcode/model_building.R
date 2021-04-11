@@ -36,7 +36,51 @@ train_data %>%
   mutate_all(log) %>%
   pairs(main = "Scatterplots of the log of Continuous Variables in Training Data")
 
+# Depth and table percentage both do not appear to be linearly correlated with
+# our response variable: price. In fact both variables appear to be evenly
+# scattered along all possible values of price.
 
+# Let us make some interaction graphs to explore if any interactions may be
+# worthwhile in our models. Carat (and log(carat)) is highly collinear 
+# with x, y, and z, and it is an important attribute of a diamond (its weight)
+# so let's use that to inspect possible interactions.
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  mutate(log_carat = log(carat)) %>%
+  ggplot(aes(log_carat, log_price, color = cut)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  xlab("log(Carat)")+
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Simple log(Carat)*Cut Interaction Plot") +
+  theme_minimal()
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  mutate(log_carat = log(carat)) %>%
+  ggplot(aes(log_carat, log_price, color = color)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  xlab("log(Carat)")+
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Simple log(Carat)*Color Interaction Plot") +
+  theme_minimal()
+
+
+train_data %>%
+  mutate(log_price = log(price)) %>%
+  mutate(log_carat = log(carat)) %>%
+  ggplot(aes(log_carat, log_price, color = clarity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  xlab("log(Carat)")+
+  ylab("log(Price) (log US Dollars)") +
+  ggtitle("Simple log(Carat)*Clarity Interaction Plot") +
+  theme_minimal()
+
+# All three suggest that there may be some interactions, 
+# however the log(Carat)*Color interaction looks to be the weakest
 
 # Building a recipe
 ## Going to use a bagged trees imputation method to deal with missing values
@@ -51,7 +95,8 @@ diamonds_rec <- recipe(price ~ ., data = train_data) %>%
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, depth, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors())
+  step_normalize(price, carat, x, y, z)
+
 
   
 
