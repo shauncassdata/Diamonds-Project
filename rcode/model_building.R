@@ -185,7 +185,7 @@ diamonds_rec <- recipe(price ~ ., data = train_data) %>%
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, depth, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(price, carat, x, y, z)
+  step_normalize(price, depth, table, carat, x, y, z)
 
 
   
