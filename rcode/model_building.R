@@ -178,18 +178,94 @@ train_data %>%
 ### By using a recipe, we can impute missing values in the test set the
 ### the exact same way we did for the training set.
 
-diamonds_rec <- recipe(price ~ ., data = train_data) %>%
+diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, depth, x, y, z)) %>%
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(price, depth, table, carat, x, y, z)
+  step_normalize(all_predictors())
 
+diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  # Also depth is a calculation based on x, y, and z.
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(price, carat, x, y, z) %>%
+  step_normalize(all_predictors())
 
-  
+diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  # Also depth is a calculation based on x, y, and z.
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(price, carat, x, y, z) %>%
+  step_normalize(all_predictors()) %>%
+  step_interact(terms = ~ cut:carat + color:carat + clarity:carat)
 
+# Model setups
+
+## This is a "pure" ridge regression model so it will not do feature selection  
+ridge_mod <- linear_reg(penalty = tune(), mixture = 0) %>%
+  set_engine("glmnet")
   
   
+# Create folds for cross-validation parameter tuning
+## 5 folds was chosen instead of 10 due to only having 43k rows of data.
+## It was repeated 10 times to increase the accuracy of the tuned parameters.
+set.seed(444)
+folds <- vfold_cv(train_data, v = 5, repeats = 10)
+
+# Workflows for the models
+ridge_wf1 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec1) 
+
+ridge_wf2 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec2)
+
+ridge_wf3 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec3)
+
+# Tuning model parameters
+set.seed(333)
+
+ridge_fit1_rs <- ridge_wf1 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+
+ridge_fit1_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+
+ridge_fit2_rs <- ridge_wf2 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+
+ridge_fit2_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+
+ridge_fit3_rs <- ridge_wf3 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+
+ridge_fit3_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+
 
