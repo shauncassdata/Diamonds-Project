@@ -117,10 +117,11 @@ train_data %>%
             sd_log_price = sd(log_price),
             total_n = n()) %>%
   ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
-  geom_point() +
+  geom_point(position=position_dodge(width=0.5)) +
   geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
-                    ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
-  geom_line() +
+                    ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n))),
+                 position=position_dodge(width=0.5)) +
+  geom_line(position=position_dodge(width=0.5)) +
   theme_minimal() +
   scale_colour_brewer(type = "qual", palette = 3)
 
@@ -203,21 +204,33 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors()) %>%
-  step_interact(terms = ~ cut:carat + color:carat + clarity:carat)
+  step_interact(terms = ~ cut:carat + color:carat + clarity:carat) %>%
+  step_normalize(all_predictors())
+
+diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  # Also depth is a calculation based on x, y, and z.
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(price, carat, x, y, z) %>%
+  step_normalize(all_predictors())
 
 # Model setups
 
 ## This is a "pure" ridge regression model so it will not do feature selection  
 ridge_mod <- linear_reg(penalty = tune(), mixture = 0) %>%
   set_engine("glmnet")
+
   
-  
+# Random forest model.
+rf_mod <- rand_forest(mtry = tune(), trees = 1000, min_n = tune()) %>%
+  set_engine("ranger") %>%
+  set_mode("regression")
+
 # Create folds for cross-validation parameter tuning
-## 5 folds was chosen instead of 10 due to only having 43k rows of data.
-## It was repeated 10 times to increase the accuracy of the tuned parameters.
 set.seed(444)
-folds <- vfold_cv(train_data, v = 5, repeats = 10)
+folds <- vfold_cv(train_data, v = 10)
 
 # Workflows for the models
 ridge_wf1 <- workflow() %>%
@@ -231,6 +244,11 @@ ridge_wf2 <- workflow() %>%
 ridge_wf3 <- workflow() %>%
   add_model(ridge_mod) %>%
   add_recipe(diamonds_ridge_rec3)
+
+
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_recipe(diamonds_rf_rec)
 
 # Tuning model parameters
 set.seed(333)
@@ -269,3 +287,8 @@ ridge_fit3_rs %>%
   geom_line()
 
 
+registerDoParallel()
+set.seed(222)
+rf_fit_tune <- rf_wf %>%
+  tune_grid(resamples = folds, grid = 20)
+stopImplicitCluster()
