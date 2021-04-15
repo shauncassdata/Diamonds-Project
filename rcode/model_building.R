@@ -186,7 +186,7 @@ diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors())
+  step_normalize(carat, x, y, z)
 
 diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
@@ -195,7 +195,7 @@ diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors())
+  step_normalize(carat, depth, table, x, y, z)
 
 diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
@@ -204,8 +204,10 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_interact(terms = ~ cut:carat + color:carat + clarity:carat) %>%
-  step_normalize(all_predictors())
+  step_interact(terms = ~ cut:carat) %>%
+  step_interact(terms = ~ clarity:carat) %>%
+  step_interact(terms = ~ color:carat) %>%
+  step_normalize(carat, x, y, z)
 
 diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
@@ -214,7 +216,7 @@ diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors())
+  step_normalize(carat, depth, table, x, y, z)
 
 # Model setups
 
