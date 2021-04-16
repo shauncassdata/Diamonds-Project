@@ -235,6 +235,18 @@ ggsave(filename = "Figures/recorded_calculated_depth_percentage.png", dpi = 320)
 
 diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(temp_depth < 30)
+# Realistically it does not make sense for the z value to be this low.
+# Ideal depth percentage is somewhere in the 50% - 70% range.
+
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(temp_depth > 75)
+
+
+
+diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   filter(abs((temp_depth - depth)/depth) >= 0.01) %>%
   count() # 120 in total with a 1% difference between the two
 
@@ -247,16 +259,28 @@ diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
   select(carat, depth, temp_depth, x, y, z)
+# x and y are relatively close like expected except for one row.
 
 # Depth percentage is inherently a transformation of the x, y, and z values.
 # It would make sense to adjust for depth percentage values by using the
 # calculated depth percentage instead of the recorded value.
-# However, the main reponse variable I am investigating is price and the 
-# recorded depth percentage may have more of an effect on price than any of 
-# the single measures (length, width, and depth) alone. 
-# Because of this I have opted not to replace the recorded values of depth 
-# percentage with the calculated values of depth percentage.
+# It would also make sense to adjust the erroneous z values by using the same
+# formula. In order to reduce biasing the data too much, I will only adjust
+# the 18 z values where the difference between the recorded depth percentage
+# and the calculated depth percentage is >= 10%. I adjusted the z value as 
+# that appeared to be the cause of the issue. x and y appear to be relatively
+# close like expected except for one row which is still not that big of a 
+# difference between x and y.
+error_z_ids <- diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
+  pull(id)
 
+diamonds$z[diamonds$id %in% error_z_ids] <- diamonds %>%
+  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
+  mutate(temp_z = round((depth * (x + y)) / (2*100), 2)) %>%
+  pull(temp_z)
 
 
 range(diamonds$depth)
