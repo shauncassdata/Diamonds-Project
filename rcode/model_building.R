@@ -362,6 +362,16 @@ glmnet_fit3_rs %>%
   geom_point() +
   geom_line()
 
+# Saving tuning ridge and glmnet fits for easy access later
+save(ridge_fit1_rs, file = "Data/ridge_fit1_rs.Rda")
+save(ridge_fit2_rs, file = "Data/ridge_fit2_rs.Rda")
+save(ridge_fit3_rs, file = "Data/ridge_fit3_rs.Rda")
+
+save(glmnet_fit1_rs, file = "Data/glmnet_fit1_rs.Rda")
+save(glmnet_fit2_rs, file = "Data/glmnet_fit2_rs.Rda")
+save(glmnet_fit3_rs, file = "Data/glmnet_fit3_rs.Rda")
+
+
 
 registerDoParallel()
 set.seed(222)
