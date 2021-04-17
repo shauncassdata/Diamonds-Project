@@ -378,3 +378,6 @@ set.seed(222)
 rf_fit_tune <- rf_wf %>%
   tune_grid(resamples = folds, grid = 20)
 stopImplicitCluster()
+
+# Saving tuning random forest fit for easy access later
+save(rf_fit_tune, file = "Data/rf_fit_tune.Rda")
