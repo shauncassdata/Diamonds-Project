@@ -36,6 +36,13 @@ train_data %>%
   mutate_all(log) %>%
   pairs(main = "Scatterplots of the log of Continuous Variables in Training Data")
 
+train_data %>%
+  select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
+  mutate_at(c("price", "carat", "x", "y", "z"),log) %>%
+  pairs(main = "Scatterplots of the log of Continuous Variables* in Training Data")
+title(sub = "*Except table and depth which are kept at their regular values")
+
 # Depth and table percentage both do not appear to be linearly correlated with
 # our response variable: price. In fact both variables appear to be evenly
 # scattered along all possible values of price.
