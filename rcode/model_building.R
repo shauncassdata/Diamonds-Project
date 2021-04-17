@@ -222,9 +222,7 @@ diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   # Also depth is a calculation based on x, y, and z.
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
-  step_log(price, carat, x, y, z) %>%
-  step_normalize(all_predictors())
-
+  step_log(price, carat, x, y, z) 
 # Model setups
 
 ## This is a "pure" ridge regression model so it will not do feature selection  
