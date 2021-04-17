@@ -259,6 +259,14 @@ glmnet_wf1 <- workflow() %>%
   add_model(glmnet_mod) %>%
   add_recipe(diamonds_ridge_rec1)
 
+glmnet_wf2 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec2)
+
+glmnet_wf3 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec3)
+
 
 rf_wf <- workflow() %>%
   add_model(rf_mod) %>%
@@ -311,6 +319,42 @@ glmnet_fit1_rs %>%
   geom_point() +
   geom_line()
 glmnet_fit1_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = mixture, y = mean)) +
+  geom_point() +
+  geom_line()
+
+glmnet_fit2_rs <- glmnet_wf2 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit2_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+glmnet_fit2_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = mixture, y = mean)) +
+  geom_point() +
+  geom_line()
+
+glmnet_fit3_rs <- glmnet_wf3 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit3_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+glmnet_fit3_rs %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
   filter(mean < 0.2) %>%
