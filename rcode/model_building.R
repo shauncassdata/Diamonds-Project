@@ -1,9 +1,9 @@
 library(tidyverse)
 library(GGally)
 library(tidymodels)
+library(doParallel)
 load(file = "Data/updated_diamonds.Rda")
 
-# Since 
 
 # Splitting the data set.
 set.seed(555)
