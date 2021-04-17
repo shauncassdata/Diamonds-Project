@@ -231,7 +231,10 @@ diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
 ridge_mod <- linear_reg(penalty = tune(), mixture = 0) %>%
   set_engine("glmnet")
 
-  
+# glmnet model where the mixture is now tuned as well.
+glmnet_mod <- linear_reg(penalty = tune(), mixture = tune()) %>%
+  set_engine("glmnet")
+
 # Random forest model.
 rf_mod <- rand_forest(mtry = tune(), trees = 1000, min_n = tune()) %>%
   set_engine("ranger") %>%
@@ -253,6 +256,10 @@ ridge_wf2 <- workflow() %>%
 ridge_wf3 <- workflow() %>%
   add_model(ridge_mod) %>%
   add_recipe(diamonds_ridge_rec3)
+
+glmnet_wf1 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec1)
 
 
 rf_wf <- workflow() %>%
@@ -292,6 +299,24 @@ ridge_fit3_rs %>%
   filter(.metric == "rmse") %>%
   filter(mean < 0.2) %>%
   ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+
+glmnet_fit1_rs <- glmnet_wf1 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit1_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = penalty, y = mean)) +
+  geom_point() +
+  geom_line()
+glmnet_fit1_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  filter(mean < 0.2) %>%
+  ggplot(aes(x = mixture, y = mean)) +
   geom_point() +
   geom_line()
 
