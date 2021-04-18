@@ -371,13 +371,80 @@ save(glmnet_fit1_rs, file = "Data/glmnet_fit1_rs.Rda")
 save(glmnet_fit2_rs, file = "Data/glmnet_fit2_rs.Rda")
 save(glmnet_fit3_rs, file = "Data/glmnet_fit3_rs.Rda")
 
+# The random forest models were tuned using cross-validation instead of the 
+# OOB error due to the fact that the preprocessing includes imputation.
 
-
-registerDoParallel()
+all_cores_minus_one <- parallel::detectCores(logical = FALSE) - 1
+cl <- makePSOCKcluster(all_cores_minus_one)
+registerDoParallel(cl)
 set.seed(222)
 rf_fit_tune <- rf_wf %>%
   tune_grid(resamples = folds, grid = 20)
-stopImplicitCluster()
+stopCluster(cl = cl)
 
 # Saving tuning random forest fit for easy access later
 save(rf_fit_tune, file = "Data/rf_fit_tune.Rda")
+
+
+rf_fit_tune %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  ggplot(aes(x = mtry, y = mean, color = min_n)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err),
+                 show.legend = TRUE) +
+  theme_minimal() +
+  scale_color_viridis_c() +
+  scale_x_continuous(breaks = 1:9) +
+  ylab("Mean RMSE") +
+  ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
+          subtitle = "Error bars represent +/- 1 standard error") 
+# It appears higher mtry values and lower min_n values result in a smaller RMSE
+
+
+
+rf_fit_tune %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  ggplot(aes(x = mtry, y = min_n, size = mean)) +
+  geom_point(color = "firebrick2") +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:9)
+
+
+# Now to try a more fine tuned grid using the information from above
+## This takes a significant amount of time to run
+all_cores_minus_one <- parallel::detectCores(logical = FALSE) - 1
+cl <- makePSOCKcluster(all_cores_minus_one)
+registerDoParallel(cl)
+set.seed(123)
+rf_fit_tune_fine <- rf_wf %>%
+  tune_grid(resamples = folds, grid = expand.grid("mtry" = 5:9, "min_n" = c(5, 7, 9, 11)))
+stopCluster(cl = cl)
+
+save(rf_fit_tune_fine, file = "Data/rf_fit_tune_fine.Rda")
+
+rf_fit_tune_fine %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  ggplot(aes(x = mtry, y = mean, color = min_n)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err),
+                show.legend = TRUE) +
+  theme_minimal() +
+  scale_color_viridis_c() +
+  scale_x_continuous(breaks = 5:9) +
+  ylab("Mean RMSE") +
+  ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
+          subtitle = "Error bars represent +/- 1 standard error") 
+# It appears higher mtry values and lower min_n values result in a smaller RMSE
+
+
+
+rf_fit_tune_fine %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  ggplot(aes(x = mtry, y = min_n, size = mean)) +
+  geom_point(color = "firebrick2") +
+  theme_minimal() +
+  scale_x_continuous(breaks = 5:9)
