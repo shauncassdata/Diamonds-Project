@@ -2,6 +2,7 @@ library(tidyverse)
 library(GGally)
 library(tidymodels)
 library(doParallel)
+library(vip)
 load(file = "Data/updated_diamonds.Rda")
 
 
@@ -428,16 +429,18 @@ rf_fit_tune_fine %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
   ggplot(aes(x = mtry, y = mean, color = min_n)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err),
-                show.legend = TRUE) +
+  geom_point(size = 2, position = position_dodge2(width = 0.4)) +
+  geom_linerange(aes(ymin = mean - std_err, ymax = mean + std_err),
+                show.legend = TRUE, position = position_dodge2(width = 0.4)) +
   theme_minimal() +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = 5:9) +
   ylab("Mean RMSE") +
   ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
           subtitle = "Error bars represent +/- 1 standard error") 
-# It appears higher mtry values and lower min_n values result in a smaller RMSE
+# mtry = 6 and min_n = 7 seems like a good canidate
+## min_n = 7 if consinstently lower than the others except mtry = 6 where it is
+## only slightly above min_n = 9.
 
 
 
@@ -448,3 +451,22 @@ rf_fit_tune_fine %>%
   geom_point(color = "firebrick2") +
   theme_minimal() +
   scale_x_continuous(breaks = 5:9)
+
+# We can fit the model on the whole training data set and get an estimate
+# of the test error using the OOB error.
+
+last_rf_mod <- rand_forest(mtry = 6, min_n = 9, trees = 1000) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("regression")
+
+last_rf_wf <- rf_wf %>%
+  update_model(last_rf_mod)
+
+# Now use it on the training data
+set.seed(999)
+train_rf_fit <- last_rf_wf %>%
+  fit(data = train_data)
+
+train_rf_fit %>%
+  pull_workflow_fit() %>%
+  vip()
