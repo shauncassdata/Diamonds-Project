@@ -9,10 +9,21 @@ diamonds %>%
   ggplot(aes(x = carat)) +
   geom_histogram(aes(y=..density..), fill = "steelblue", alpha = 0.5) +
   geom_density(size = 1.05, color = "red3") +
-  xlab("Carat") +
+  xlab("Weight (Carat)") +
   ylab("Density") +
   ggtitle("Distribution of the Diamonds' Weight (Carat)") +
   theme_minimal() 
+# Pretty right skewed.
+# Let's look at a log transformation.
+
+diamonds %>%
+  ggplot(aes(x = log(carat))) +
+  geom_histogram(aes(y=..density..), fill = "steelblue", alpha = 0.5) +
+  geom_density(size = 1.05, color = "red3") +
+  xlab("Weight (log(Carat))") +
+  ylab("Density") +
+  ggtitle("Distribution of the Diamonds' Weight (Carat)") +
+  theme_minimal() # More symmetric than it was before at least
 
 diamonds %>%
   ggplot(aes(x = cut)) +
@@ -72,6 +83,17 @@ diamonds %>%
   theme_minimal()
 ## Price is really right skewed. 
 
+# Let us look at a log transformation of the price
+diamonds %>%
+  ggplot(aes(x = log(price))) +
+  geom_histogram(aes(y=..density..), bins = 5000,
+                 fill = "steelblue", alpha = 0.5) +
+  geom_density(size = 1.05,color = "violetred2") +
+  ggtitle("Distribution of the Diamonds' Price") +
+  xlab("Price (log US Dollars)") +
+  ylab("Density") +
+  theme_minimal()
+
 
 ## Dropping the 8 rows that have NA values for either x, y, or z
 diamonds %>%
@@ -121,17 +143,17 @@ diamonds %>%
 diamonds %>%
   ggplot(aes(carat, price)) +
   geom_point() +
-  xlab("Carat") +
+  xlab("Weight (Carat)") +
   ylab("Price (US Dollars)") +
-  ggtitle("Price vs. Carat") +
+  ggtitle("Price vs. Weight") +
   theme_minimal()
 
 diamonds %>%
   ggplot(aes(log(carat), log(price))) +
   geom_point() +
-  xlab("log(Carat)") +
-  ylab("log(Price) (log US Dollars)") +
-  ggtitle("log(Price) vs. log(Carat)") +
+  xlab("Weight (log(Carat))") +
+  ylab("Price (log US Dollars)") +
+  ggtitle("Price vs. Weight") +
   theme_minimal()
 
 
@@ -159,7 +181,7 @@ diamonds %>%
   ggplot(aes(x = cut, y = log(price))) +
   geom_boxplot() +
   xlab("Cut") +
-  ylab("log(Price) (log US Dollars)") +
+  ylab("Price (log US Dollars)") +
   ggtitle("Distribution of log Price for each Cut of Diamond") +
   theme_minimal()
 
@@ -175,7 +197,7 @@ diamonds %>%
   ggplot(aes(x = color, y = log(price))) +
   geom_boxplot() +
   xlab("Color") +
-  ylab("log(Price) (log US Dollars)") +
+  ylab("Price (log US Dollars)") +
   ggtitle("Distribution of log Price for each Color of Diamond") +
   theme_minimal()
 
@@ -191,7 +213,7 @@ diamonds %>%
   ggplot(aes(x = clarity, y = price)) +
   geom_boxplot() +
   xlab("Clarity") +
-  ylab("log(Price) (log US Dollars)") +
+  ylab("Price (log US Dollars)") +
   ggtitle("Distribution of Price for each Clarity of Diamond") +
   theme_minimal()
 
