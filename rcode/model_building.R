@@ -149,7 +149,7 @@ diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
   step_normalize(all_predictors())
@@ -158,7 +158,7 @@ diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
   step_normalize(all_predictors())
@@ -167,7 +167,7 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
   step_interact(terms = ~ cut:carat) %>%
@@ -180,7 +180,7 @@ diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z))
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z))
 # Model setups
 
 ## This is a "pure" ridge regression model so it will not do feature selection  
