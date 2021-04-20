@@ -5,11 +5,20 @@ library(doParallel)
 library(vip)
 load(file = "Data/updated_diamonds.Rda")
 
+# We are already aware from EDA that Price is heavily right-skewed.
+# Due to this, we will log transform it before splitting the data.
+# There is no data leakage as it is a 1-to-1 transformation.
+
+diamonds <- diamonds %>%
+  mutate(price = log(price))
 
 # Splitting the data set.
+# Due to the long tails in price, we will stratify it using price.
+# This should separate price into quartiles and sample from there.
+## This strategy follows the same one used in Chapter 5 of Tidy Modeling with R
 set.seed(555)
 
-data_split <- initial_split(diamonds, prop = 0.8)
+data_split <- initial_split(diamonds, prop = 0.8, strata = price)
 
 train_data <- training(data_split)
 test_data <- testing(data_split)
@@ -30,19 +39,22 @@ train_data %>%
   drop_na() %>%
   pairs(main = "Scatterplots of Continuous Variables in Training Data")
 
-# log scale all of the numerical variables
+# log scale carat
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
-  mutate_all(log) %>%
-  pairs(main = "Scatterplots of the log of Continuous Variables in Training Data")
+  mutate(carat = log(carat)) %>%
+  pairs(main = "Scatterplots of the Continuous Variables in Training Data (carat log transformed)")
 
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
-  mutate_at(c("price", "carat", "x", "y", "z"),log) %>%
-  pairs(main = "Scatterplots of the log of Continuous Variables* in Training Data")
-title(sub = "*Except table and depth which are kept at their regular values")
+  mutate(carat = log(carat),
+         x = log(x),
+         y = log(y),
+         z = log(z)) %>%
+  pairs(main = "Scatterplots of the Continuous Variables in Training Data\n (carat, x, y, z log transformed)")
+
 
 # Depth and table percentage both do not appear to be linearly correlated with
 # our response variable: price. In fact both variables appear to be evenly
@@ -54,37 +66,34 @@ title(sub = "*Except table and depth which are kept at their regular values")
 # so let's use that to inspect possible interactions.
 
 train_data %>%
-  mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(x = log_carat, y = log_price, color = cut)) +
+  ggplot(aes(x = log_carat, y = price, color = cut)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  xlab("log(Carat)")+
-  ylab("log(Price) (log US Dollars)") +
-  ggtitle("Simple log(Carat)*Cut Interaction Plot") +
+  xlab("Weight (log(carat))")+
+  ylab("Price (log US Dollars)") +
+  ggtitle("Simple Weight*Cut Interaction Plot") +
   theme_minimal()
 
 train_data %>%
-  mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(x = log_carat, y = log_price, color = color)) +
+  ggplot(aes(x = log_carat, y = price, color = color)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  xlab("log(Carat)")+
-  ylab("log(Price) (log US Dollars)") +
-  ggtitle("Simple log(Carat)*Color Interaction Plot") +
+  xlab("Weight (log(carat))")+
+  ylab("Price (log US Dollars)") +
+  ggtitle("Simple Weight*Color Interaction Plot") +
   theme_minimal()
 
 
 train_data %>%
-  mutate(log_price = log(price)) %>%
   mutate(log_carat = log(carat)) %>%
   ggplot(aes(x = log_carat, y = log_price, color = clarity)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  xlab("log(Carat)")+
-  ylab("log(Price) (log US Dollars)") +
-  ggtitle("Simple log(Carat)*Clarity Interaction Plot") +
+  xlab("Weight (log(carat))")+
+  ylab("Price (log US Dollars)") +
+  ggtitle("Simple Weight*Clarity Interaction Plot") +
   theme_minimal()
 
 
@@ -94,35 +103,31 @@ train_data %>%
 
 ## See if it is feasible to construct confidence intervals for the next 
 ## interaction plots
-train_data %>%
-  mutate(log_price = log(price)) %>%
+train_data  %>%
   group_by(cut, color) %>%
-  summarise(mean_log_price = mean(log_price),
+  summarise(mean_log_price = mean(price),
             total_n = n()) %>%
   arrange(total_n) # minimum n is 89
 
 train_data %>%
-  mutate(log_price = log(price)) %>%
   group_by(cut, clarity) %>%
-  summarise(mean_log_price = mean(log_price),
+  summarise(mean_log_price = mean(price),
             total_n = n()) %>%
   arrange(total_n) # minimum n is 7
 ## Because this sample size is so low, we may opt to not construct t-intervals
 ## for some of these categorical combinations
 
 train_data %>%
-  mutate(log_price = log(price)) %>%
   group_by(clarity, color) %>%
-  summarise(mean_log_price = mean(log_price),
+  summarise(mean_log_price = mean(price),
             total_n = n()) %>%
   arrange(total_n) # min n is 33
 
 
-train_data %>%
-  mutate(log_price = log(price)) %>%
+train_data  %>%
   group_by(cut, color) %>%
-  summarise(mean_log_price = mean(log_price),
-            sd_log_price = sd(log_price),
+  summarise(mean_log_price = mean(price),
+            sd_log_price = sd(price),
             total_n = n()) %>%
   ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
   geom_point(position=position_dodge(width=0.5)) +
@@ -133,53 +138,6 @@ train_data %>%
   theme_minimal() +
   scale_colour_brewer(type = "qual", palette = 3)
 
-## let us inspect just J and H
-train_data %>%
-  mutate(log_price = log(price)) %>%
-  group_by(cut, color) %>%
-  summarise(mean_log_price = mean(log_price),
-            sd_log_price = sd(log_price),
-            total_n = n()) %>%
-  filter(color %in% c("J", "H")) %>%
-  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
-  geom_point() +
-  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
-                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
-  geom_line() +
-  theme_minimal() +
-  scale_colour_brewer(type = "qual", palette = 3)
-
-## let us also inspect H and G
-train_data %>%
-  mutate(log_price = log(price)) %>%
-  group_by(cut, color) %>%
-  summarise(mean_log_price = mean(log_price),
-            sd_log_price = sd(log_price),
-            total_n = n()) %>%
-  filter(color %in% c("G", "H")) %>%
-  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
-  geom_point() +
-  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
-                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
-  geom_line() +
-  theme_minimal() +
-  scale_colour_brewer(type = "qual", palette = 3)
-
-## and E and D
-train_data %>%
-  mutate(log_price = log(price)) %>%
-  group_by(cut, color) %>%
-  summarise(mean_log_price = mean(log_price),
-            sd_log_price = sd(log_price),
-            total_n = n()) %>%
-  filter(color %in% c("E", "D")) %>%
-  ggplot(aes(x = cut, y = mean_log_price, group = color, color = color)) +
-  geom_point() +
-  geom_linerange(aes(ymin = mean_log_price-qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)),
-                     ymax = mean_log_price+qt(1-(0.05/(2*35)), total_n - 1)*(sd_log_price/sqrt(total_n)))) +
-  geom_line() +
-  theme_minimal() +
-  scale_colour_brewer(type = "qual", palette = 3)
 
 # Building a recipe
 ## Going to use a bagged trees imputation method to deal with missing values
@@ -193,7 +151,7 @@ diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   # Also depth is a calculation based on x, y, and z.
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
-  step_log(price, carat, x, y, z) %>%
+  step_log(carat, x, y, z) %>%
   step_normalize(all_predictors())
 
 diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
@@ -202,7 +160,7 @@ diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
   # Also depth is a calculation based on x, y, and z.
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
-  step_log(price, carat, x, y, z) %>%
+  step_log(carat, x, y, z) %>%
   step_normalize(all_predictors())
 
 diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
@@ -211,19 +169,18 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   # Also depth is a calculation based on x, y, and z.
   step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
-  step_log(price, carat, x, y, z) %>%
+  step_log(carat, x, y, z) %>%
   step_interact(terms = ~ cut:carat) %>%
   step_interact(terms = ~ clarity:carat) %>%
   step_interact(terms = ~ color:carat) %>%
   step_normalize(all_predictors())
 
+# Random forest generally does not need dummy variables or normalization
 diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
   # Also depth is a calculation based on x, y, and z.
-  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
-  step_ordinalscore(cut, color, clarity) %>% 
-  step_log(price, carat, x, y, z) 
+  step_bagimpute(x, y, z, impute_with = imp_vars(carat, x, y, z))
 # Model setups
 
 ## This is a "pure" ridge regression model so it will not do feature selection  
