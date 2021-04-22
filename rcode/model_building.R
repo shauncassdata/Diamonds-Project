@@ -430,6 +430,41 @@ rf_fit_tune_fine %>%
   theme_minimal() +
   scale_x_continuous(breaks = 5:9)
 
+
+five_best <- tibble("Model" = c(rep("ridge_fit1", 5), rep("ridge_fit2", 5),
+                                rep("ridge_fit3", 5), rep("glmnet_fit1", 5),
+                                rep("glmnet_fit2", 5), rep("glmnet_fit3", 5),
+                                rep("tree_fit", 5), rep("rf_fit", 5),
+                                rep("rf_fit_fine_tuned", 5)),
+                    "Mean" = c(ridge_fit1_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               ridge_fit2_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               ridge_fit3_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               glmnet_fit1_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               glmnet_fit2_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               glmnet_fit3_rs %>% show_best(metric = "rmse") %>% pull(mean),
+                               tree_fit_tune %>% show_best(metric = "rmse") %>% pull(mean),
+                               rf_fit_tune %>% show_best(metric = "rmse") %>% pull(mean),
+                               rf_fit_tune_fine %>% show_best(metric = "rmse") %>% pull(mean)),
+                    "std_err" = c(ridge_fit1_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  ridge_fit2_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  ridge_fit3_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  glmnet_fit1_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  glmnet_fit2_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  glmnet_fit3_rs %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  tree_fit_tune %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  rf_fit_tune %>% show_best(metric = "rmse") %>% pull(std_err),
+                                  rf_fit_tune_fine %>% show_best(metric = "rmse") %>% pull(std_err)),
+                    "rank" = factor(rep(1:5, times = 9)))
+
+five_best %>%
+  ggplot(aes(x = Model, y = Mean, group = rank, fill = rank)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = Mean - std_err, ymax = Mean + std_err),
+                position = "dodge", color = "black") +
+  theme_classic() +
+  scale_fill_brewer(type = "seq", palette = "Paired")
+
+
 # We can fit the model on the whole training data set and get an estimate
 # of the test error using the OOB error.
 
