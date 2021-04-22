@@ -148,7 +148,6 @@ train_data  %>%
 diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
-  # Also depth is a calculation based on x, y, and z.
   step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
@@ -157,7 +156,6 @@ diamonds_ridge_rec1 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
 diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
-  # Also depth is a calculation based on x, y, and z.
   step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
@@ -166,7 +164,6 @@ diamonds_ridge_rec2 <- recipe(price ~ ., data = train_data) %>%
 diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
-  # Also depth is a calculation based on x, y, and z.
   step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
   step_ordinalscore(cut, color, clarity) %>% 
   step_log(carat, x, y, z) %>%
@@ -175,12 +172,18 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   step_interact(terms = ~ color:carat) %>%
   step_normalize(all_predictors())
 
+# Tree based models generally do not need dummy variables or normalization
+diamonds_tree_rec <- recipe(price ~ ., data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z))
+
 # Random forest generally does not need dummy variables or normalization
 diamonds_rf_rec <- recipe(price ~ ., data = train_data) %>%
   update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
   # We know that x, y, z, and carat are highly collinear. 
-  # Also depth is a calculation based on x, y, and z.
   step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z))
+
 # Model setups
 
 ## This is a "pure" ridge regression model so it will not do feature selection  
@@ -190,6 +193,14 @@ ridge_mod <- linear_reg(penalty = tune(), mixture = 0) %>%
 # glmnet model where the mixture is now tuned as well.
 glmnet_mod <- linear_reg(penalty = tune(), mixture = tune()) %>%
   set_engine("glmnet")
+
+# Regression tree
+## Mainly for reference to the random forest as decision trees usually
+## do not have good predictive power.
+tree_mod <- decision_tree(cost_complexity = tune(), tree_depth = tune(),
+                          min_n = tune()) %>%
+  set_engine("rpart") %>%
+  set_mode("regression")
 
 # Random forest model.
 rf_mod <- rand_forest(mtry = tune(), trees = 1000, min_n = tune()) %>%
@@ -225,6 +236,9 @@ glmnet_wf3 <- workflow() %>%
   add_model(glmnet_mod) %>%
   add_recipe(diamonds_ridge_rec3)
 
+tree_wf <- workflow() %>%
+  add_model(tree_mod) %>%
+  add_recipe(diamonds_tree_rec)
 
 rf_wf <- workflow() %>%
   add_model(rf_mod) %>%
@@ -328,6 +342,13 @@ save(ridge_fit3_rs, file = "Data/ridge_fit3_rs.Rda")
 save(glmnet_fit1_rs, file = "Data/glmnet_fit1_rs.Rda")
 save(glmnet_fit2_rs, file = "Data/glmnet_fit2_rs.Rda")
 save(glmnet_fit3_rs, file = "Data/glmnet_fit3_rs.Rda")
+
+
+tree_fit_tune <- tree_wf %>%
+  tune_grid(resamples = folds, grid = 20)
+
+# Save tree fit for later
+save(tree_fit_tune, file = "Data/tree_fit_tune.Rda")
 
 # The random forest models were tuned using cross-validation instead of the 
 # OOB error due to the fact that the preprocessing includes imputation.
