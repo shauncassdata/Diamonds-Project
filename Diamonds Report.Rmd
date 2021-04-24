@@ -6,38 +6,68 @@ output: pdf_document
 ---
 
 
-Prices of over 50,000 round cut diamonds
+```{r load packages and data, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(kableExtra)
 
-Variables are as follows:
+load("Data/updated_diamonds.Rda")
+load("Data/ridge_fit1_rs.Rda")
+load("Data/ridge_fit2_rs.Rda")
+load("Data/ridge_fit3_rs.Rda")
+load("Data/glmnet_fit1_rs.Rda")
+load("Data/glmnet_fit2_rs.Rda")
+load("Data/glmnet_fit3_rs.Rda")
+load("Data/tree_fit_tune.Rda")
+load("Data/rf_fit_tune.Rda")
+load("Data/rf_fit_tune_fine.Rda")
+load("Data/y11_idsdiamonds.Rda")
+```
 
-price
-price in US dollars (\$326–\$18,823)
+# Introduction
 
-carat
-weight of the diamond (0.2–5.01)
+Round cut diamonds (also called round brilliant) are the most popular shape of diamond and are often used in jewelery such as engagement rings. The 
 
-cut
-quality of the cut (Fair, Good, Very Good, Premium, Ideal)
 
-color
-diamond colour, from D (best) to J (worst)
+# About the Data
 
-clarity
-a measurement of how clear the diamond is (I1 (worst), SI2, SI1, VS2, VS1, VVS2, VVS1, IF (best))
+The Diamonds data set was originally procured by requesting the data set from Dr. Crawford at Texas A&M. Upon further inspection, it was realized that this data set was a common data set used for learning how to make exploratory graphics and perform rudimentary inference. This data set comes standard in the ggplot2 package and includes a desciption of the data that we have reproduced in table 1. 
 
-x
-length in mm (0–10.74)
+The Diamonds data set contains the the characteristics of 53,940 round cut diamonds. The variables associated with each diamond are as follows: price (in US Dollars), carat (weight), Cut (Fair, Good, Very Good, Premium, Ideal), Color (D (best) to J (worst)), Clarity (I1 (worst), SI2, SI1, VS2, VS1, VVS2, VVS1, IF (best), x (length in mm), y (width in mm), z (depth in mm), depth (total depth percentage), and table (total table percentage). Cut, color, and clarity were ordered categorical variables as described in table 1 while the rest were numerical variables. Based on the data description and the use of the Diamonds data set in other reports, the data was believed to contain independent observations and the methods used in this report treated each observation as independent of one another. 
 
-y
-width in mm (0–58.9)
+```{r Diamonds description table, echo=FALSE}
+ddf <- data.frame("Variable" = c("price", "carat", "cut", "color", "clarity", "x", "y", "z", "depth", "table"),
+                  "Description" = c("Price in US dollars ($326–$18,823)",
+                                    "Weight of the diamond (0.2–5.01)",
+                                    "Quality of the cut (Fair, Good, Very Good, Premium, Ideal)",
+                                    "Diamond colour, from D (best) to J (worst)",
+                                    "A measurement of how clear the diamond is (I1 (worst), SI2, SI1, VS2, VS1, VVS2, VVS1, IF (best))",
+                                    "Length in mm (0–10.74)",
+                                    "Width in mm (0–58.9)",
+                                    "Depth in mm (0–31.8)",
+                                    "Total depth percentage = z / mean(x, y) = 2 * z / (x + y) (43–79)",
+                                    "Width of top of diamond relative to widest point (43–95)"))
 
-z
-depth in mm (0–31.8)
+ddf %>%
+  kable(format = "latex", align = "c",
+        caption = "Description of the Diamonds data set from the ggplot2 package.")
+```
 
-depth
-total depth percentage = z / mean(x, y) = 2 * z / (x + y) (43–79)
+The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
 
-table
-width of top of diamond relative to widest point (43–95)
+The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because depth, x, and y were not missing and depth by definition was a calculation using x, y, and z, we thought it was appropriate to replace these 12 missing z values using the following calculation derived from the depth calculation:
+$$z=\frac{depth\%*(x+y)}{2*100}$$
 
-[
+The calculated z value was rounded to the second decimal place to match the format of the other z values in the data set. 
+
+Additionally, two observations were found where y (width in mm) was abnormally larger than x (length in mm). Since round cut diamonds are cut diamonds where x and y are supposed to be relatively close to each other, it is highly unlikely that y would be six to seven times greater than x as seen in table 2. Also, the depth (z) of the diamond tends to be smaller than the average of x and y and round cut diamonds having greater than 100% depth percentage seems extremely unlikely as a round cut diamond is considered poor once its depth percentage is greater than 70.9% (Figure 1).
+
+![GIA total depth percentage grading for round cut diamonds](Figures/gia_totaldepth_table.PNG)
+
+```{r abnormally large ys, echo=FALSE}
+y11_idsdiamonds %>%
+  kable(format = "latex", align = "c",
+        caption = "Abnormally large values of y in the Diamonds data set.")
+```
+
+Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive was 83.8%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
+
