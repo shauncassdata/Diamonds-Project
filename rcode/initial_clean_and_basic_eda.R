@@ -148,6 +148,10 @@ y11_ids <- diamonds %>%
   filter(y >= 11) %>%
   pull(id)
 
+y11_idsdiamonds <- diamonds[y11_ids,]
+
+save(y11_idsdiamonds, file = "Data/y11_idsdiamonds.Rda")
+
 diamonds$y[diamonds$id %in% y11_ids] <- diamonds$z[diamonds$id %in% y11_ids]
 diamonds$z[diamonds$id %in% y11_ids] <- diamonds %>%
   filter(id %in% y11_ids) %>%
@@ -168,6 +172,9 @@ zhigh_ids <- diamonds %>%
   select(id, carat, depth, x, y, z) %>%
   filter(z >= y | z >= x) %>%
   pull(id)
+
+zhigh_idsdiamonds <- diamonds[zhigh_ids,]
+save(zhigh_idsdiamonds, file = "Data/zhigh_idsdiamonds.Rda")
   
 diamonds$z[diamonds$id %in% zhigh_ids] <- diamonds %>%
   filter(id %in% zhigh_ids) %>%
