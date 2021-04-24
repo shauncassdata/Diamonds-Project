@@ -23,6 +23,7 @@ load("Data/rf_fit_tune_fine.Rda")
 load("Data/y11_idsdiamonds.Rda")
 load("Data/zhigh_idsdiamonds.Rda")
 load("Data/rec_calc_total_depth.Rda")
+load("Data/largediff_depth.Rda")
 ```
 
 # Introduction
@@ -56,6 +57,8 @@ ddf %>%
 
 The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
 
+## Missing values and Outliers
+
 The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because total depth percentage, x, and y were not missing and the total depth percentage by definition was a calculation using x, y, and z, we thought it was appropriate to replace these 12 missing z values using the following formula derived from the total depth percentage calculation:
 $$z=\frac{depth\%*(x+y)}{2*100}$$
 
@@ -80,9 +83,12 @@ zhigh_idsdiamonds %>%
         caption = "Diamonds where depth (z) is greater than the average diameter.")
 ```
 
-To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. 
+To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. It was found that there were 120 observations with a 1% difference or more between the recorded and calculated total depth percentage. Going further, there were 18 observations with a 10% difference or more between the recorded and calculated total depth percentage. The x and y features of these 18 observations noticeably similar with x ranging from 0.75 t0 1.62 times the size of y. The z values were again suspected to be the reason for the noticeable difference between the recorded and calculated total depth percentages for these 18 observations. The z values were thus replaced using the same formula as before. To avoid possibly biasing the data, any remaining observations that had a difference between the recorded and calculated total depth percentage were left as is. 
 
 ```{r recorded vs. calculated total depth, echo=FALSE, fig.cap="Recorded vs. Calcualted Total Depth Percentage", fig.height=4, fig.width=6}
 rec_calc_total_depth
 ```
+
+
+## Examing the cleaned data
 
