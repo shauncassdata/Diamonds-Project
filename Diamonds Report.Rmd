@@ -21,6 +21,8 @@ load("Data/tree_fit_tune.Rda")
 load("Data/rf_fit_tune.Rda")
 load("Data/rf_fit_tune_fine.Rda")
 load("Data/y11_idsdiamonds.Rda")
+load("Data/zhigh_idsdiamonds.Rda")
+load("Data/rec_calc_total_depth.Rda")
 ```
 
 # Introduction
@@ -54,7 +56,7 @@ ddf %>%
 
 The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
 
-The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because depth, x, and y were not missing and depth by definition was a calculation using x, y, and z, we thought it was appropriate to replace these 12 missing z values using the following calculation derived from the depth calculation:
+The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because total depth percentage, x, and y were not missing and the total depth percentage by definition was a calculation using x, y, and z, we thought it was appropriate to replace these 12 missing z values using the following formula derived from the total depth percentage calculation:
 $$z=\frac{depth\%*(x+y)}{2*100}$$
 
 The calculated z value was rounded to the second decimal place to match the format of the other z values in the data set. 
@@ -70,4 +72,17 @@ y11_idsdiamonds %>%
 ```
 
 Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive was 83.8%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
+
+Two other observations were found where the depth (z) was greater than the average of x and y (table 3). These observations were also corrected so using the same z formula as before.
+```{r zhigh diamonds, echo=FALSE}
+zhigh_idsdiamonds %>%
+  kable(format = "latex", align = "c",
+        caption = "Diamonds where depth (z) is greater than the average diameter.")
+```
+
+To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. 
+
+```{r recorded vs. calculated total depth, echo=FALSE, fig.cap="Recorded vs. Calcualted Total Depth Percentage", fig.height=4, fig.width=6}
+rec_calc_total_depth
+```
 
