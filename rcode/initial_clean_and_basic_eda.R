@@ -228,16 +228,21 @@ diamonds %>%
 
 # Looks to be just slight rounding errors of some kind
 # can plot it out to make sure
-diamonds %>%
+rec_calc_total_depth <- diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
   filter(depth != temp_depth) %>%
   ggally_points(aes(x = temp_depth, y = depth)) +
-  xlab("Calculated Depth Percentage") +
-  ylab("Recorded Depth Percentage") +
-  ggtitle("Recorded vs. Calculated Depth Percentage") +
-  theme_minimal()
+  geom_abline(aes(slope = 1, intercept = 0, color = "red"), linetype = "dashed") +
+  xlab("Calculated Total Depth Percentage") +
+  ylab("Recorded Total Depth Percentage") +
+  ggtitle("Recorded vs. Calculated Total Depth Percentage") +
+  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = "1:1") +
+  scale_x_continuous(labels = scales::label_percent(accuracy = 1, scale = 1)) +
+  scale_y_continuous(labels = scales::label_percent(accuracy = 1, scale = 1))+
+  theme_bw() 
 
-ggsave(filename = "Figures/recorded_calculated_depth_percentage.png", dpi = 320)
+save(rec_calc_total_depth, file = "Data/rec_calc_total_depth.Rda")
+
 # Looks to be some extreme outliers
 
 diamonds %>%
@@ -262,10 +267,14 @@ diamonds %>%
   filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
   count() # 18 in total with a 10% difference between the two.
 
-diamonds %>%
-  mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
-  filter(abs((temp_depth - depth)/depth) >= 0.1) %>%
-  select(carat, depth, temp_depth, x, y, z)
+largediff_depth <- diamonds %>%
+  mutate(calc_depth = round(2*(z/(x+y)) * 100, 1)) %>%
+  filter(abs((calc_depth - depth)/depth) >= 0.1) %>%
+  select(id, carat, depth, calc_depth, x, y, z)
+
+largediff_depth
+
+save(largediff_depth, file = "Data/largediff_depth.Rda")
 # x and y are relatively close like expected except for one row.
 
 # Depth percentage is inherently a transformation of the x, y, and z values.
