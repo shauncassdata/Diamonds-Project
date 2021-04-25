@@ -11,6 +11,7 @@ library(tidyverse)
 library(tidymodels)
 library(kableExtra)
 library(patchwork)
+library(GGally)
 
 load("Data/updated_diamonds.Rda")
 load("Data/ridge_fit1_rs.Rda")
@@ -314,7 +315,8 @@ price_cut <- diamonds %>%
   ggtitle("Distribution of log Price for each\nCut of Diamond") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
-        title = element_text(size = 7))
+        title = element_text(size = 7)) +
+  scale_y_continuous(labels = scales::label_dollar())
 
 price_color <- diamonds %>%
   ggplot(aes(x = color, y = log(price))) +
@@ -324,7 +326,8 @@ price_color <- diamonds %>%
   ggtitle("Distribution of log Price for each\nColor of Diamond") +
   theme_bw() +
   theme(axis.title.y = element_blank(),
-        title = element_text(size = 7))
+        title = element_text(size = 7)) +
+  scale_y_continuous(labels = scales::label_dollar())
 
 price_clarity <- diamonds %>%
   ggplot(aes(x = clarity, y = log(price))) +
@@ -335,7 +338,8 @@ price_clarity <- diamonds %>%
   theme_bw() +
   theme(axis.title.y = element_blank(),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
-        title = element_text(size = 7))
+        title = element_text(size = 7)) +
+  scale_y_continuous(labels = scales::label_dollar())
 
 price_cut + price_color + price_clarity +
   plot_annotation(caption = "Figure 7: Distribution of log price for levels of cut, color, and clarity.",
@@ -346,7 +350,21 @@ price_cut + price_color + price_clarity +
 
 ## Splitting the data
 
+```{r corrplot of train data, echo=FALSE}
+train_data %>%
+  select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
+  ggcorr(label = TRUE) +
+  ggtitle("Pearson Correlation of Continuous Variables in Training Data")
+```
+
+
+
 
 ## Preliminary models and tuning
 
+## Final model
+
 # Results
+
+# Conclusion
