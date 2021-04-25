@@ -27,28 +27,28 @@ diamonds %>%
 
 diamonds %>%
   ggplot(aes(x = cut)) +
-  geom_bar() +
+  geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Cut") +
   ylab("Count") +
-  ggtitle("Number of Diamonds Per Cut Type", subtitle = "Sorted from worst (Fair) to best (Ideal)")
+  ggtitle("Proportion of Diamonds Per Cut Type", subtitle = "Sorted from worst (Fair) to best (Ideal)")
 ## There are very few diamonds that are a "Fair" cut type
 
 
 diamonds %>%
   ggplot(aes(x = color)) +
-  geom_bar() +
+  geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Color") +
   ylab("Count") +
-  ggtitle("Number of Diamonds Per Color Type", subtitle = "Sorted from worst (J) to best (D)")
+  ggtitle("Proportion of Diamonds Per Color Type", subtitle = "Sorted from worst (J) to best (D)")
 ## Distribution of Color Type is pretty close to uniform for G, F, and E. 
 ## A lot less of J color type compared to the rest.
 
 diamonds %>%
   ggplot(aes(x = clarity)) +
-  geom_bar() +
+  geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Clarity") +
   ylab("Count") +
-  ggtitle("Number of Diamonds Per Clarity Type", subtitle = "Sorted from worst (I1) to best (IF)")
+  ggtitle("Proportion of Diamonds Per Clarity Type", subtitle = "Sorted from worst (I1) to best (IF)")
 ## There are an extremely small amont of I1 compared to all the other clarity types
 
 diamonds %>%
@@ -210,7 +210,7 @@ diamonds %>%
   theme_minimal()
 
 diamonds %>%
-  ggplot(aes(x = clarity, y = price)) +
+  ggplot(aes(x = clarity, y = log(price))) +
   geom_boxplot() +
   xlab("Clarity") +
   ylab("Price (log US Dollars)") +
