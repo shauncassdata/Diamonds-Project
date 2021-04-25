@@ -8,6 +8,7 @@ output: pdf_document
 
 ```{r load packages and data, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
+library(tidymodels)
 library(kableExtra)
 library(patchwork)
 
@@ -25,14 +26,18 @@ load("Data/y11_idsdiamonds.Rda")
 load("Data/zhigh_idsdiamonds.Rda")
 load("Data/rec_calc_total_depth.Rda")
 load("Data/largediff_depth.Rda")
+load("Data/data_split.Rda")
+load("Data/train_data.Rda")
+load("Data/test_data.Rda")
 ```
 
 # Introduction
 
 Round cut diamonds (also called round brilliant) are the most popular shape of diamond and are often used in jewelery such as engagement rings. The 
 
+# Methods
 
-# About the Data
+## About the Data
 
 The Diamonds data set was originally procured by requesting the data set from Dr. Crawford at Texas A&M. Upon further inspection, it was realized that this data set was a common data set used for learning how to make exploratory graphics and perform rudimentary inference. This data set comes standard in the ggplot2 package and includes a desciption of the data that we have reproduced in table 1. 
 
@@ -75,7 +80,7 @@ y11_idsdiamonds %>%
         caption = "Abnormally large values of y in the Diamonds data set.")
 ```
 
-Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive was 83.8%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
+Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive using a given set of parameters was 83.8%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
 
 Two other observations were found where the depth (z) was greater than the average of x and y (table 3). These observations were also corrected so using the same z formula as before.
 ```{r zhigh diamonds, echo=FALSE}
@@ -242,7 +247,7 @@ cut + clarity + color + plot_annotation(caption = "Figure 5: Distribution of cut
 
 ```
 
-
+This was was further explored by examining the bivariate proportions for cut, color, and clarity (figure 6). If any two-way interactions existed between these categorical features, then the sparse amount of diamonds for certain combinations of these features may impact the accuracy of a model for future predictions on similar diamonds. For instance, there were only nine diamonds in total with a cut equal to "Fair" and a clarity equal to "IF". Predictions for diamonds similar to these may not be as accurate as the other combinations.
 
 
 ```{r categorical heatmaps, echo=FALSE, message=FALSE}
@@ -293,6 +298,55 @@ clarity_color <- diamonds %>%
   scale_size(name = "Proportion of \nTotal Data") +
   theme(title = element_text(size = 7))
 
-color_cut + clarity_cut  / clarity_color
+color_cut + clarity_cut  / clarity_color +
+  plot_annotation(caption = "Figure 6: Bivariate proportions for cut, color, and clarity.",
+                  theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
+
+
+```{r log price vs factor vars, echo=FALSE}
+price_cut <- diamonds %>%
+  ggplot(aes(x = cut, y = log(price))) +
+  geom_boxplot() +
+  xlab("Cut") +
+  ylab("Price (log US Dollars)") +
+  ggtitle("Distribution of log Price for each\nCut of Diamond") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
+        title = element_text(size = 7))
+
+price_color <- diamonds %>%
+  ggplot(aes(x = color, y = log(price))) +
+  geom_boxplot() +
+  xlab("Color") +
+  ylab("Price (log US Dollars)") +
+  ggtitle("Distribution of log Price for each\nColor of Diamond") +
+  theme_bw() +
+  theme(axis.title.y = element_blank(),
+        title = element_text(size = 7))
+
+price_clarity <- diamonds %>%
+  ggplot(aes(x = clarity, y = log(price))) +
+  geom_boxplot() +
+  xlab("Clarity") +
+  ylab("Price (log US Dollars)") +
+  ggtitle("Distribution of log Price for each\nClarity of Diamond") +
+  theme_bw() +
+  theme(axis.title.y = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
+        title = element_text(size = 7))
+
+price_cut + price_color + price_clarity +
+  plot_annotation(caption = "Figure 7: Distribution of log price for levels of cut, color, and clarity.",
+                  theme = theme(plot.caption = element_text(hjust = 0.5)))
+
+```
+
+
+## Splitting the data
+
+
+## Preliminary models and tuning
+
+# Results

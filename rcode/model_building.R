@@ -23,7 +23,10 @@ data_split <- initial_split(diamonds, prop = 0.8, strata = price)
 train_data <- training(data_split)
 test_data <- testing(data_split)
 
-
+# Save for future use.
+save(data_split, file = "Data/data_split.Rda")
+save(train_data, file = "Data/train_data.Rda")
+save(test_data, file = "Data/test_data.Rda")
 
 # Looking at a few important graphs again with the training data this time
 # instead of the complete data.
