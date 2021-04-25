@@ -91,7 +91,7 @@ train_data %>%
 
 train_data %>%
   mutate(log_carat = log(carat)) %>%
-  ggplot(aes(x = log_carat, y = log_price, color = clarity)) +
+  ggplot(aes(x = log_carat, y = price, color = clarity)) +
   geom_point() +
   geom_smooth(method = "lm") +
   xlab("Weight (log(carat))")+
