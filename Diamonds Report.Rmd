@@ -9,6 +9,7 @@ output: pdf_document
 ```{r load packages and data, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(kableExtra)
+library(patchwork)
 
 load("Data/updated_diamonds.Rda")
 load("Data/ridge_fit1_rs.Rda")
@@ -90,5 +91,208 @@ rec_calc_total_depth
 ```
 
 
-## Examing the cleaned data
+## Examining the cleaned data
+
+The response variable for the Diamonds data set was decided to be the price in US dollars for each diamond. 
+```{r price and log price, echo=FALSE}
+a <- diamonds %>%
+  ggplot(aes(x = price)) +
+  geom_density(size = 1.05, fill = "steelblue", alpha = 0.8) +
+  ggtitle("Distribution of the Diamonds' Price") +
+  xlab("Price (US Dollars)") +
+  ylab("Density") +
+  geom_vline(aes(xintercept = mean(price), color = "Mean"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(price, 0.5), color = "Median"), linetype = "twodash") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  scale_color_manual(name = "", values = c(Mean = "deeppink1", Median = "darkorchid1")) +
+  theme_minimal()
+
+b <- diamonds %>%
+  ggplot(aes(x = log(price)))  +
+  geom_density(size = 1.05, fill = "steelblue", alpha = 0.8) +
+  ggtitle("Distribution of the Diamonds' Price", subtitle = "Price is natural log transformed") +
+  xlab("Price (log US Dollars)") +
+  ylab("Density") +
+  geom_vline(aes(xintercept = mean(log(price)), color = "Mean"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(log(price), 0.5), color = "Median"), linetype = "twodash") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  scale_color_manual(name = "", values = c(Mean = "deeppink1", Median = "darkorchid1")) +
+  theme_minimal()
+
+c <- a / b & theme(legend.position = "right")
+c + plot_layout(guides = "collect") +
+  plot_annotation(caption = "Figure 3: Distribution of price and its natural log transformation.",
+                  theme = theme(plot.caption = element_text(hjust = 0.5)))
+```
+
+Price had a heavily right-skewed distribution as noted in figure 3 with a sample mean of \$3932.8 and a sample median of \$2401. Price was natural log transformed so that no diamonds would be predicted to have a negative value of price and any errors in predicting the more expensive diamonds would not have a disporportionate influence on the model.
+
+The other numerical features of the diamonds were also examined as seen in figure 4 and figure 5.
+```{r dist of carat table and depth, echo=FALSE}
+d <- diamonds %>%
+  ggplot(aes(x = carat)) +
+  geom_density(size = 1.05, fill = "red3", alpha = 0.8) +
+  xlab("Weight (Carat)") +
+  ylab("Density") +
+  ggtitle("Distribution of the Diamonds' Weight (Carat)") +
+  theme_minimal()
+
+e <- diamonds %>%
+  ggplot(aes(x = depth)) +
+  geom_density(size = 1.05, fill = "violet", alpha = 0.8) +
+  ggtitle("Distribution of the Diamonds' Total Depth Percentage") +
+  xlab("Total Depth (%)") +
+  ylab("Density") +
+  scale_x_continuous(labels = scales::label_percent(scale = 1)) +
+  theme_minimal()
+
+f <- diamonds %>%
+  ggplot(aes(x = table))   +
+  geom_density(size = 1.05, fill = "green4", alpha = 0.8) +
+  ggtitle("Distribution of the Diamonds' Table Percentage") +
+  xlab("Table (%)") +
+  ylab("Density") +
+  scale_x_continuous(labels = scales::label_percent(scale = 1)) +
+  theme_minimal()
+
+d / e / f + plot_annotation(caption = "Figure 4: Distribution of carat, total depth percentage, and table percentage.",
+                  theme = theme(plot.caption = element_text(hjust = 0.5)))
+```
+
+Like price, carat appeared to be right-skewed while the total depth percentage and table percentage were fairly symmetrical. On the other hand, the distributions of x and y were similar which was to be expected for round cut diamonds. The distribution of z was also noticeably centered on smaller values than x or y.
+
+```{r dist of x y and z, echo=FALSE}
+g <- diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = x)) +
+  geom_density(fill = "turquoise3", alpha = 0.8, size = 1.05) +
+  ggtitle("Distribution of the Diamonds' Length") +
+  xlab("x (mm)") +
+  ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
+  theme_minimal()
+
+h <- diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = y)) +
+  geom_density(fill = "deeppink3", alpha = 0.8, size = 1.05) +
+  ggtitle("Distribution of the Diamonds' Width") +
+  xlab("y (mm)") +
+  ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
+  theme_minimal()
+
+i <- diamonds %>%
+  select(x, y, z) %>%
+  drop_na() %>%
+  ggplot(aes(x = z)) +
+  geom_density(fill = "palegreen3", alpha = 0.8, size = 1.05) +
+  ggtitle("Distribution of the Diamonds' Depth") +
+  xlab("z (mm)") +
+  ylab("Density") +
+  scale_x_continuous(limits = c(0, 11)) +
+  theme_minimal()  
+
+g / h / i + plot_annotation(caption = "Figure 4: Distribution of x, y, and z (excluding eight observations with missing values).",
+                  theme = theme(plot.caption = element_text(hjust = 0.5)))
+```
+
+The proportion of diamonds for each level of cut, clarity and color was also examined (figure 5). The worst levels of cut (Fair), clarity (I1), and color (J) made up a significantly smaller proportion of the data set compared to the other levels. Furthermore, the best level of clarity (IF) was only present in 3.32% of the data. These proportions indicated that predictions on diamonds having these levels may not be as robust due to the relatively small amount of data used to train a model.
+
+
+
+
+
+```{r dist of cut clarity and color, echo=FALSE}
+cut <- diamonds %>%
+  ggplot(aes(x = cut)) +
+  geom_bar(aes(y = ..prop.., group = 1)) +
+  xlab("Cut") +
+  ylab("Proportion") +
+  ggtitle("Proportion of Diamonds Per Cut Type", subtitle = "Sorted from worst (Fair) to best (Ideal)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 7),
+        title = element_text(size = 8))
+
+clarity <- diamonds %>%
+  ggplot(aes(x = clarity)) +
+  geom_bar(aes(y = ..prop.., group = 1)) +
+  xlab("Clarity") +
+  ylab("Proportion") +
+  ggtitle("Proportion of Diamonds Per Clarity Type", subtitle = "Sorted from worst (I1) to best (IF)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 7),
+        title = element_text(size = 8))
+
+color <- diamonds %>%
+  ggplot(aes(x = color)) +
+  geom_bar(aes(y = ..prop.., group = 1)) +
+  xlab("Color") +
+  ylab("Proportion") +
+  ggtitle("Proportion of Diamonds Per Color Type", subtitle = "Sorted from worst (J) to best (D)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 7),
+        title = element_text(size = 8)) 
+
+cut + clarity + color + plot_annotation(caption = "Figure 5: Distribution of cut, clarity, and color.",
+                  theme = theme(plot.caption = element_text(hjust = 0.5))) +
+  plot_layout(nrow = 2)
+
+```
+
+
+
+
+```{r categorical heatmaps, echo=FALSE, message=FALSE}
+color_cut <- diamonds %>%
+  group_by(cut, color) %>%
+  summarise(n_part = n()) %>%
+  group_by(cut) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = cut, y = color, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Cut") +
+  ylab("Color") +
+  ggtitle("Proportion of Total Data for Each Color and Cut") +
+  scale_size(name = "Proportion of \nTotal Data") +
+  theme(axis.text.x = element_text(size = 5.2),
+        title = element_text(size = 7))
+
+clarity_cut <- diamonds %>%
+  group_by(cut, clarity) %>%
+  summarise(n_part = n()) %>%
+  group_by(cut) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = cut, y = clarity, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Cut") +
+  ylab("Clarity") +
+  ggtitle("Proportion of Total Data for Each Clarity and Cut") +
+  scale_size(name = "Proportion of \nTotal Data") +
+  theme(axis.text.x = element_text(size = 5.2),
+        title = element_text(size = 7))
+
+clarity_color <- diamonds %>%
+  group_by(color, clarity) %>%
+  summarise(n_part = n()) %>%
+  group_by(color) %>%
+  mutate(Density = n_part/53940) %>%
+  ggplot(aes(x = color, y = clarity, fill = Density)) +
+  geom_tile()  +
+  scale_fill_viridis_c(name = "Proportion of \nTotal Data") +
+  theme_minimal() +
+  xlab("Color") +
+  ylab("Clarity") +
+  ggtitle("Proportion of Total Data for Each Clarity and Color") +
+  scale_size(name = "Proportion of \nTotal Data") +
+  theme(title = element_text(size = 7))
+
+color_cut + clarity_cut  / clarity_color
+```
 
