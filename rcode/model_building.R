@@ -142,6 +142,8 @@ train_data  %>%
   scale_colour_brewer(type = "qual", palette = 3)
 
 
+
+
 # Building a recipe
 ## Going to use a bagged trees imputation method to deal with missing values
 ## in x, y, and z.
@@ -173,6 +175,42 @@ diamonds_ridge_rec3 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = t
   step_interact(terms = ~ cut:carat) %>%
   step_interact(terms = ~ clarity:carat) %>%
   step_interact(terms = ~ color:carat) %>%
+  step_normalize(all_predictors())
+
+diamonds_ridge_rec4 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(carat, x, y, z) %>%
+  step_interact(terms = ~ (cut+clarity+color)^2)  %>%
+  step_normalize(all_predictors())
+
+diamonds_ridge_rec5 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(carat, x, y, z) %>%
+  step_interact(terms = ~ (cut+clarity+color)^3)  %>%
+  step_normalize(all_predictors())
+
+diamonds_ridge_rec6 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(carat, x, y, z) %>%
+  step_interact(terms = ~ (carat+cut+clarity+color)^2)  %>%
+  step_normalize(all_predictors())
+
+diamonds_ridge_rec7 <- recipe(price ~ id+cut+clarity+color+carat+x+y+z, data = train_data) %>%
+  update_role(id, new_role = "ID") %>% # make sure id is not used in predicting
+  # We know that x, y, z, and carat are highly collinear. 
+  step_impute_bag(x, y, z, impute_with = imp_vars(carat, x, y, z)) %>%
+  step_ordinalscore(cut, color, clarity) %>% 
+  step_log(carat, x, y, z) %>%
+  step_interact(terms = ~ (carat+cut+clarity+color)^3)  %>%
   step_normalize(all_predictors())
 
 # Tree based models generally do not need dummy variables or normalization
@@ -227,6 +265,22 @@ ridge_wf3 <- workflow() %>%
   add_model(ridge_mod) %>%
   add_recipe(diamonds_ridge_rec3)
 
+ridge_wf4 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec4)
+
+ridge_wf5 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec5)
+
+ridge_wf6 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec6)
+
+ridge_wf7 <- workflow() %>%
+  add_model(ridge_mod) %>%
+  add_recipe(diamonds_ridge_rec7)
+
 glmnet_wf1 <- workflow() %>%
   add_model(glmnet_mod) %>%
   add_recipe(diamonds_ridge_rec1)
@@ -238,6 +292,22 @@ glmnet_wf2 <- workflow() %>%
 glmnet_wf3 <- workflow() %>%
   add_model(glmnet_mod) %>%
   add_recipe(diamonds_ridge_rec3)
+
+glmnet_wf4 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec4)
+
+glmnet_wf5 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec5)
+
+glmnet_wf6 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec6)
+
+glmnet_wf7 <- workflow() %>%
+  add_model(glmnet_mod) %>%
+  add_recipe(diamonds_ridge_rec7)
 
 tree_wf <- workflow() %>%
   add_model(tree_mod) %>%
@@ -346,6 +416,41 @@ save(glmnet_fit1_rs, file = "Data/glmnet_fit1_rs.Rda")
 save(glmnet_fit2_rs, file = "Data/glmnet_fit2_rs.Rda")
 save(glmnet_fit3_rs, file = "Data/glmnet_fit3_rs.Rda")
 
+set.seed(675)
+
+ridge_fit4_rs <- ridge_wf4 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+ridge_fit5_rs <- ridge_wf5 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+ridge_fit6_rs <- ridge_wf6 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+ridge_fit7_rs <- ridge_wf7 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), levels = 50))
+
+glmnet_fit4_rs <- glmnet_wf4 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit5_rs <- glmnet_wf5 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit6_rs <- glmnet_wf6 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+glmnet_fit7_rs <- glmnet_wf7 %>%
+  tune_grid(resamples = folds, grid = grid_regular(penalty(), mixture(),
+                                                   levels = 50))
+
+
+# Saving for easy access later
+save(ridge_fit4_rs, file = "Data/ridge_fit4_rs.Rda")
+save(ridge_fit5_rs, file = "Data/ridge_fit5_rs.Rda")
+save(ridge_fit6_rs, file = "Data/ridge_fit6_rs.Rda")
+save(ridge_fit7_rs, file = "Data/ridge_fit7_rs.Rda")
+
+save(glmnet_fit4_rs, file = "Data/glmnet_fit4_rs.Rda")
+save(glmnet_fit5_rs, file = "Data/glmnet_fit5_rs.Rda")
+save(glmnet_fit6_rs, file = "Data/glmnet_fit6_rs.Rda")
+save(glmnet_fit7_rs, file = "Data/glmnet_fit7_rs.Rda")
 
 tree_fit_tune <- tree_wf %>%
   tune_grid(resamples = folds, grid = 20)
