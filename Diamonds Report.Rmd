@@ -62,7 +62,50 @@ ddf %>%
         caption = "Description of the Diamonds data set from the ggplot2 package.")
 ```
 
+
+The diamonds in the data set were graded using the Gemmological Institute of America's (GIA) grading system. The four primary the GIA uses to characterize a faceted diamond are color, clarity, cut, and carat weight. The GIA has instituted objective measures to grade these properties of faceted diamonds and diamonds can be graded at one of the nine GIA grading laboratories. 
+
+![GIA color scale.](Figures/GIA_color_scale.jpg)
+
+The GIA scale for the color of a diamond ranges from the top grade "D" (colorless) to the worst grade "Z" (light yellow) (Figure 1). The diamonds in the data set used only ranged from "D" to "J" meaning that the predictive model built on this data would not be useful for "Faint", "Very Light", or "Light" colored diamonds. 
+
+![GIA clarity scale.](Figures/GIA_clarity_scale.jpg)
+
+The clarity scale that the GIA grades a faceted diamond ranges from Flawless to I3 (figure 2). Inclusions are imperfections usually caused by the heat and pressure that become apparent with the use of a microscope. An example would be a mineral crystal within the diamond itself or even a break in the gemstone. The Diamonds data set only contained diamonds with a clarity that ranged from Internally Flawless (IF) to the first level of Included (I1) so the predictive model built on this data set would not be useful for diamonds whose clarity is Flawless, I2, or I3.
+
+
+![GIA cut scale.](Figures/GIA_cut_scale.jpg)
+
+
+
+
+![GIA anatomy of a diamond.](Figures/GIA_anatomy_of_diamond.jpg)
+
+
+
 The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Missing values and Outliers
 
@@ -304,7 +347,7 @@ color_cut + clarity_cut  / clarity_color +
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
-
+When the distribution of the natural log of price was compared across the levels of cut, clarity, and color (figure 7), it became obvious that many of the levels that made up a smaller proportion of the data had a much tighter distribution than the other levels. Some such as the I1 and IF level of clarity also had a fair amount of outliers. This may be due to how the data was sampled and may not be representative of how these types of diamonds are priced. It was determined that depending on importance of these categorical variables, more diamonds with these rarer features may be needed in the future to increase the predictive accuracy of the model created.
 
 ```{r log price vs factor vars, echo=FALSE}
 price_cut <- diamonds %>%
@@ -349,6 +392,8 @@ price_cut + price_color + price_clarity +
 
 
 ## Splitting the data
+
+
 
 ```{r corrplot of train data, echo=FALSE}
 train_data %>%
