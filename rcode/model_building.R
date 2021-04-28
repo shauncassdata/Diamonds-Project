@@ -3,6 +3,7 @@ library(GGally)
 library(tidymodels)
 library(doParallel)
 library(vip)
+library(rpart.plot)
 load(file = "Data/updated_diamonds.Rda")
 
 # We are already aware from EDA that Price is heavily right-skewed.
@@ -457,6 +458,39 @@ tree_fit_tune <- tree_wf %>%
 
 # Save tree fit for later
 save(tree_fit_tune, file = "Data/tree_fit_tune.Rda")
+
+# best tree based on 1 SD rule for cost_complexity
+best_tree <- tree_fit_tune %>%
+  select_by_one_std_err(metric = "rmse", desc(cost_complexity))
+
+updated_tree_mod <- decision_tree(cost_complexity = best_tree$cost_complexity,
+                                  tree_depth = best_tree$tree_depth,
+                                  min_n = best_tree$min_n) %>%
+  set_engine("rpart") %>%
+  set_mode("regression")
+
+# Fit the best tree on the sample portion of training data.
+## Creating a reference tree for the report.
+updated_tree_wf <- tree_wf %>%
+  update_model(updated_tree_mod)
+
+set.seed(354)
+small_amount_data <- train_data[sample(1:nrow(train_data), size = 100),]
+
+small_tree_fit <- updated_tree_wf %>%
+  fit(data = small_amount_data)
+
+small_rpart <- small_tree_fit %>%
+  pull_workflow_fit()
+
+pdf(file = "Figures/sample_tree_plot.pdf")
+rpart.plot(small_rpart$fit, tweak = 1.2, leaf.round = 3,
+           box.palette = c("deepskyblue3", "chartreuse3", "gold2"),
+           type = 1, extra = 1, shadow.col = "darkgray",  branch.lty = 2,
+           round = 0, prefix = "log price\n", fallen.leaves = FALSE)
+dev.off()
+
+
 
 # The random forest models were tuned using cross-validation instead of the 
 # OOB error due to the fact that the preprocessing includes imputation.
