@@ -12,6 +12,7 @@ library(tidymodels)
 library(kableExtra)
 library(patchwork)
 library(GGally)
+library(magick)
 
 load("Data/updated_diamonds.Rda")
 load("Data/ridge_fit1_rs.Rda")
@@ -65,23 +66,35 @@ ddf %>%
 
 The diamonds in the data set were graded using the Gemmological Institute of America's (GIA) grading system. The four primary the GIA uses to characterize a faceted diamond are color, clarity, cut, and carat weight. The GIA has instituted objective measures to grade these properties of faceted diamonds and diamonds can be graded at one of the nine GIA grading laboratories. 
 
-![GIA color scale.](Figures/GIA_color_scale.jpg)
+```{r GIA color image, echo=FALSE, out.extra='trim={0 4.5cm 0 4cm},clip', fig.cap="GIA color scale."}
+GIAcolor <- image_read("Figures/GIA_color_scale.jpg")
+plot(GIAcolor)
+
+```
 
 The GIA scale for the color of a diamond ranges from the top grade "D" (colorless) to the worst grade "Z" (light yellow) (Figure 1). The diamonds in the data set used only ranged from "D" to "J" meaning that the predictive model built on this data would not be useful for "Faint", "Very Light", or "Light" colored diamonds. 
 
-![GIA clarity scale.](Figures/GIA_clarity_scale.jpg)
+```{r GIA clarity image, echo=FALSE, out.extra='trim={0 4.5cm 0 4cm},clip', fig.cap="GIA clarity scale."}
+GIAclarity <- image_read("Figures/GIA_clarity_scale.jpg")
+plot(GIAclarity)
+
+```
 
 The clarity scale that the GIA grades a faceted diamond ranges from Flawless to I3 (figure 2). Inclusions are imperfections usually caused by the heat and pressure that become apparent with the use of a microscope. An example would be a mineral crystal within the diamond itself or even a break in the gemstone. The Diamonds data set only contained diamonds with a clarity that ranged from Internally Flawless (IF) to the first level of Included (I1) so the predictive model built on this data set would not be useful for diamonds whose clarity is Flawless, I2, or I3.
 
+```{r GIA cut image, echo=FALSE, out.extra='trim={0 5cm 0 4cm},clip', fig.cap="GIA cut scale."}
+GIAcut <- image_read("Figures/GIA_cut_scale.jpg")
+plot(GIAcut)
 
-![GIA cut scale.](Figures/GIA_cut_scale.jpg)
+```
 
+The GIA scale for the cut of a diamond
 
+```{r GIA diamond anatomy image, echo=FALSE, out.extra='trim={0 3.2cm 0 3.5cm},clip', fig.cap="GIA anatomy of a diamond."}
+GIAanatomy <- image_read("Figures/GIA_anatomy_of_diamond.jpg")
+plot(GIAanatomy)
 
-
-![GIA anatomy of a diamond.](Figures/GIA_anatomy_of_diamond.jpg)
-
-
+```
 
 The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
 
