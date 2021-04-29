@@ -148,12 +148,23 @@ zhigh_idsdiamonds %>%
 
 To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. It was found that there were 120 observations with a 1% difference or more between the recorded and calculated total depth percentage. Going further, there were 18 observations with a 10% difference or more between the recorded and calculated total depth percentage. The x and y features of these 18 observations noticeably similar with x ranging from 0.75 t0 1.62 times the size of y. The z values were again suspected to be the reason for the noticeable difference between the recorded and calculated total depth percentages for these 18 observations. The z values were thus replaced using the same formula as before. To avoid possibly biasing the data, any remaining observations that had a difference between the recorded and calculated total depth percentage were left as is. 
 
-```{r recorded vs. calculated total depth, echo=FALSE, fig.cap="Recorded vs. Calcualted Total Depth Percentage", fig.height=4, fig.width=6}
-rec_calc_total_depth
+# Need to redo calc vs. recorded total depth percentage graph, can't save ggplot2 graphics
+
+
+```{r recorded vs calculated depth, echo=FALSE}
+rec_calc_total_depth %>%
+  drop_na() %>%
+  ggally_points(aes(x = temp_depth, y = depth)) +
+  geom_abline(aes(slope = 1, intercept = 0, color = "red"), linetype = "dashed") +
+  xlab("Calculated Total Depth Percentage") +
+  ylab("Recorded Total Depth Percentage") +
+  ggtitle("Recorded vs. Calculated Total Depth Percentage") +
+  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = "1:1") +
+  scale_x_continuous(labels = scales::label_percent(accuracy = 1, scale = 1)) +
+  scale_y_continuous(labels = scales::label_percent(accuracy = 1, scale = 1))+
+  theme_bw() 
 ```
 
-
-## Examining the cleaned data
 
 The response variable for the Diamonds data set was decided to be the price in US dollars for each diamond. 
 ```{r price and log price, echo=FALSE}
