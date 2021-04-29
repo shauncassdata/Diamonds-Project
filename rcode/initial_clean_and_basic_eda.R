@@ -226,11 +226,14 @@ diamonds %>%
   filter(depth != temp_depth) %>%
   select(depth, temp_depth, x, y, z) #3,768 rows
 
-# Looks to be just slight rounding errors of some kind
-# can plot it out to make sure
 rec_calc_total_depth <- diamonds %>%
   mutate(temp_depth = round(2*(z/(x+y)) * 100, 1)) %>%
-  filter(depth != temp_depth) %>%
+  select(depth, temp_depth)
+
+
+# Looks to be just slight rounding errors of some kind
+# can plot it out to make sure
+rec_calc_total_depth %>%
   ggally_points(aes(x = temp_depth, y = depth)) +
   geom_abline(aes(slope = 1, intercept = 0, color = "red"), linetype = "dashed") +
   xlab("Calculated Total Depth Percentage") +
