@@ -5,7 +5,7 @@ date: "3/20/2021"
 output: pdf_document
 ---
 
-```{r}
+```{r set chunk parameters, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
@@ -69,7 +69,7 @@ ddf %>%
 ```
 
 
-The diamonds in the data set were graded using the Gemmological Institute of America's (GIA) grading system. The four primary the GIA uses to characterize a faceted diamond are color, clarity, cut, and carat weight. The GIA has instituted objective measures to grade these properties of faceted diamonds and diamonds can be graded at one of the nine GIA grading laboratories. 
+There exists two primary graders of diamonds: the Gemological Institute of America (GIA) and the American Gem Society (AGS). Both use the 4Cs to characterize a faceted diamond:color, clarity, cut, and carat weight. Both have similar grading scales for color and clarity, and only slightly differ on the grading for cut. The GIA is used as the main reference for the remainder of this report.
 
 ```{r GIA color image, echo=FALSE, out.extra='trim={0 4.5cm 0 4cm},clip', fig.cap="GIA color scale."}
 GIAcolor <- image_read("Figures/GIA_color_scale.jpg")
@@ -77,7 +77,7 @@ plot(GIAcolor)
 
 ```
 
-The GIA scale for the color of a diamond ranges from the top grade "D" (colorless) to the worst grade "Z" (light yellow) (Figure 1). The diamonds in the data set used only ranged from "D" to "J" meaning that the predictive model built on this data would not be useful for "Faint", "Very Light", or "Light" colored diamonds. 
+The GIA scale for the color of a diamond ranges from the top grade "D" (colorless) to the worst grade "Z" (light yellow) (Figure 1). The diamonds in the data set used only ranged from "D" to "J" meaning that that there may be diamonds with a worse color than the ones in this data set such that the predictive model created would not yield accurrate predictions. 
 
 ```{r GIA clarity image, echo=FALSE, out.extra='trim={0 4.5cm 0 4cm},clip', fig.cap="GIA clarity scale."}
 GIAclarity <- image_read("Figures/GIA_clarity_scale.jpg")
@@ -85,7 +85,7 @@ plot(GIAclarity)
 
 ```
 
-The clarity scale that the GIA grades a faceted diamond ranges from Flawless to I3 (figure 2). Inclusions are imperfections usually caused by the heat and pressure that become apparent with the use of a microscope. An example would be a mineral crystal within the diamond itself or even a break in the gemstone. The Diamonds data set only contained diamonds with a clarity that ranged from Internally Flawless (IF) to the first level of Included (I1) so the predictive model built on this data set would not be useful for diamonds whose clarity is Flawless, I2, or I3.
+The clarity scale that the GIA grades a faceted diamond ranges from the best grade Flawless to the worst grade I3 (figure 2). Inclusions are imperfections usually caused by the heat and pressure that become apparent with the use of a microscope. An example would be a mineral crystal within the diamond itself or even a break in the gemstone. The Diamonds data set only contained diamonds with a clarity that ranged from Internally Flawless (IF) to the first level of Included (I1) so again there may be diamonds with a clarity of Flawless, I2, or I3 for which the predictive model created would not yield accurate predictions.
 
 ```{r GIA cut image, echo=FALSE, out.extra='trim={0 5cm 0 4cm},clip', fig.cap="GIA cut scale."}
 GIAcut <- image_read("Figures/GIA_cut_scale.jpg")
@@ -93,7 +93,19 @@ plot(GIAcut)
 
 ```
 
-The GIA scale for the cut of a diamond
+The GIA scale for the cut of a diamond depends on how the diamond interacts with light and ranges from the best grade Excellent to the worst grade Poor. The cut of the diamonds in the data set ranged from the best grade Ideal to the worst grade Fair. Both scales slightly differ, but each contains five levels. It is unsure if each level directly translates to one another. It may be that the diamond is graded using a variation of the American Gem Society scale as seen in figure ?; however, the scale in the diamonds data set still differs slightly. Further investigation may be needed before using the predictive model on diamonds using either the GIA or AGS cut scale.
+
+
+
+```{r AGS cut scale, echo=FALSE, out.extra='trim={0 4.5cm 0 4cm},clip', fig.cap="AGS cut scale."}
+AGScut <- image_read("Figures/AGS_cut_scale.png")
+plot(AGScut)
+
+```
+
+
+Figure ? illustrates the anatomy of a typical cut diamond. The top horizontal facet of a diamond is called the table and the table size as used in the data set is the percentage of the length of this facet compared to the average of x and y (the average girdle diameter). The total depth as used in the data set is the percentage of the overall depth relative to the average girdle diameter.
+
 
 ```{r GIA diamond anatomy image, echo=FALSE, out.extra='trim={0 3.2cm 0 3.5cm},clip', fig.cap="GIA anatomy of a diamond."}
 GIAanatomy <- image_read("Figures/GIA_anatomy_of_diamond.jpg")
@@ -101,29 +113,7 @@ plot(GIAanatomy)
 
 ```
 
-The statistical programming language R was used within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The data was analyzed and predictve model was built using the statistical programming language R within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
 
 ## Missing values and Outliers
 
@@ -142,7 +132,7 @@ y11_idsdiamonds %>%
         caption = "Abnormally large values of y in the Diamonds data set.")
 ```
 
-Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive using a given set of parameters was 83.8%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
+Likewise, using GIA's $Facetware^{(R)}$ which compares proportions of round cut diamonds to 38.5 million proportion sets, the highest total depth percentage we were able to acheive using a given set of parameters was 83.8% with a typical error of 0.2% - 0.3%. Examining table 2 further, we also saw that the z value was extremely close in value to x. Based on this information it was decided that the z values in table 2 were actually supposed to be the y values. These two observations were corrected by replacing the y values with the given z values and calculating new z values using the same formula as before.
 
 Two other observations were found where the depth (z) was greater than the average of x and y (table 3). These observations were also corrected so using the same z formula as before.
 ```{r zhigh diamonds, echo=FALSE}
@@ -152,9 +142,6 @@ zhigh_idsdiamonds %>%
 ```
 
 To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. It was found that there were 120 observations with a 1% difference or more between the recorded and calculated total depth percentage. Going further, there were 18 observations with a 10% difference or more between the recorded and calculated total depth percentage. The x and y features of these 18 observations noticeably similar with x ranging from 0.75 t0 1.62 times the size of y. The z values were again suspected to be the reason for the noticeable difference between the recorded and calculated total depth percentages for these 18 observations. The z values were thus replaced using the same formula as before. To avoid possibly biasing the data, any remaining observations that had a difference between the recorded and calculated total depth percentage were left as is. 
-
-# Need to redo calc vs. recorded total depth percentage graph, can't save ggplot2 graphics
-
 
 ```{r recorded vs calculated depth, echo=FALSE}
 rec_calc_total_depth %>%
@@ -170,6 +157,10 @@ rec_calc_total_depth %>%
   theme_bw() 
 ```
 
+
+After cleaning the data, only eight observations in total remained that contained missing values. Seven of the observations had missing values in x, y, and, z, while the last observation had only missing values in x and z. It was decided to keep these observations instead of deleting them in order to retain as much data as possible. A bagged tree imputation method with 25 trees was implemented programatically using the step_impute_bag() function in the recipes package. This method was chosen as a tree can be constructed in the presence of other missing data, trees generally have good accuracy, and they do not extrapolate outside the bounds of the training data. Bagged tree imputation methods also provide reasonable values with a lower computational cost than random forest imputation methods (Kuhn feature engineering). The method was implemented in such a way to avoid data leakage e.g. the preprocessing was done within each fold of the 10-fold cross validation.
+
+# Examining the Cleaned Data
 
 The response variable for the Diamonds data set was decided to be the price in US dollars for each diamond. 
 ```{r price and log price, echo=FALSE}
@@ -419,12 +410,15 @@ price_cut + price_color + price_clarity +
 
 ```
 
+Bivariate examinations between each numerical predictor, and examinations between the numerical predictors and the response were held off until after splitting the data. This was done to avoid biasing the model using the information from the test set.
 
 ## Splitting the data
 
+Before splitting the data, the price was natural log transformed as mentioned in the previous section and the remainder of the report will simply refer to the variable as "price". The data was split using stratified random sampling (stratified on price) and an 80/20 split so that there were 43,156 observations in the training data and 10,784 observations in the test data set. The stratification was done so that random sampling was performed in each of the four quartile bins of price. This was performed in order to avoid having an inordinate amount of observations from the tails of the distribution in the train or test set. The test set was left untouched until the final model was trained on the training data set and predictions were made for the test set.
 
+Pearson correlations were computed for the numerical variables in the training data and multiple variables were found to be highly correlated (figure ?). 
 
-```{r corrplot of train data, echo=FALSE}
+```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data."}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -432,10 +426,34 @@ train_data %>%
   ggtitle("Pearson Correlation of Continuous Variables in Training Data")
 ```
 
+Pairwise examinations of the numerical variables in training set (figure ?) also found that there existed some nonlinear association between price and many of the numerical predictors. A natural log transformation of carat, x, y, and z corrected this association such that there was both a linear relationship between the response and these predictors, and a linear relationship between these predictors. These transformations would be necessary for any linear predictive model tested. 
+
+```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data."}
+train_data %>%
+  select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
+  pairs(main = "Scatterplots of Continuous Variables in Training Data")
+```
+
+
+```{r scatterplot of vars with log trans, fig.cap="Bivariate relationships with natural log transformations."}
+train_data %>%
+  select(price, carat, depth, table, x, y, z) %>%
+  drop_na() %>%
+  mutate(log_carat = log(carat),
+         log_x = log(x),
+         log_y = log(y),
+         log_z = log(z)) %>%
+  select(price, log_carat, depth, table, log_x, log_y, log_z) %>%
+  pairs(main = "Scatterplots of the Continuous Variables in Training Data\n (carat, x, y, z natural log transformed)")
+```
+
 
 
 
 ## Preliminary models and tuning
+
+As seen in the previous sections, there were two main hurdles to overcome in building an accurate predictive model for this data. The first was that many of the numerical predictors were highly correlated with one another. The second obstacle was that due to the large amount of levels for each categorical variable, there may exist two-way or even three-way interactions that may impact the accuracy of the predictions. The size of the interaction effects was not deemed important for predicting the price, instead these interactions needed to just be considered in building a model. 
 
 ## Final model
 
