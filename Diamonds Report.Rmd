@@ -23,9 +23,17 @@ load("Data/updated_diamonds.Rda")
 load("Data/ridge_fit1_rs.Rda")
 load("Data/ridge_fit2_rs.Rda")
 load("Data/ridge_fit3_rs.Rda")
+load("Data/ridge_fit4_rs.Rda")
+load("Data/ridge_fit5_rs.Rda")
+load("Data/ridge_fit6_rs.Rda")
+load("Data/ridge_fit7_rs.Rda")
 load("Data/glmnet_fit1_rs.Rda")
 load("Data/glmnet_fit2_rs.Rda")
 load("Data/glmnet_fit3_rs.Rda")
+load("Data/glmnet_fit4_rs.Rda")
+load("Data/glmnet_fit5_rs.Rda")
+load("Data/glmnet_fit6_rs.Rda")
+load("Data/glmnet_fit7_rs.Rda")
 load("Data/tree_fit_tune.Rda")
 load("Data/rf_fit_tune.Rda")
 load("Data/rf_fit_tune_fine.Rda")
@@ -454,6 +462,102 @@ train_data %>%
 ## Preliminary models and tuning
 
 As seen in the previous sections, there were two main hurdles to overcome in building an accurate predictive model for this data. The first was that many of the numerical predictors were highly correlated with one another. The second obstacle was that due to the large amount of levels for each categorical variable, there may exist two-way or even three-way interactions that may impact the accuracy of the predictions. The size of the interaction effects was not deemed important for predicting the price, instead these interactions needed to just be considered in building a model. 
+
+Four different types of preliminary predictive models were tested using 10-fold cross-validation: ridge regression, glmnet regression, single tree model, and a random forest model. 
+
+A ridge regression was considered as the squared L2 penalty on coefficients of a linear model can help overcome multicollinearity between the predictors. This penalty shrinks the regression coefficients, but never truly makes any of them equal to zero.
+
+A glmnet regression model on the other hand has both the squared L2 penalty that induces shrinkage on the parameters and an L1 penalty that allows coefficients to equal zero. In other words, the glmnet regression model allows for model selection to happen while the ridge regression model does not. 
+
+A regression tree (using the CART method) recursively partitions the feature space using binary splits. These models can capture capture complex structures in the data and have relatively low bias if grown sufficiently deep (ESLII pg 607). However, there are two main issues usually with using a regression tree for prediction: trees can easily overfit the data (though this can be limited by adjusting the size of a tree) and regression trees on their own tend to have high variance as often a slight change in the data can lead to different splits (ESLII 326 - 331). 
+
+A technique for reducing the variance of methods like regression trees is boostrap aggregation (bagging) where a regression tree is fit many times to bootstrapped sampled versions of the training data and results are averaged. A random forest model is an extension of this method where a large collection of de-correlated trees are built and the results are averaged (ESLII 606). 
+
+For all the preliminary models, missing values of x, y, and z were imputed using a bagged tree method as described in a previous section and carat, x, y, and z were natural log transformed. For the ridge regression and glmnet regression prediction models, the cut, color, and clarity were encoded using ordinal encoding to maintain the order of the factors and all numerical predictors were normalized. The tree models did not require encoding or normalization. 
+
+Seven different ridge regression and glmnet models were formulated. 
+
+```{r}
+linear_mods <- tibble("Model" = c("Fit1", "Fit2", "Fit3",
+                               "Fit4", "Fit5", "Fit6",
+                               "Fit7"),
+                      "Formula" = c("Linear combination of: cut, clarity, color, x, y, and z",
+                                    "LInear combination of: cut, clarity, color, x, y, z, depth, and table",
+                                    "Same as Fit1 except two-way interactions cut:carat, clarity:carat, and color:carat are included.",
+                                    "Same as Fit1 except all two-way interactions between cut, clarity, and color are included.",
+                                    "Same as Fit4 except all three-way interactions between cut, clarity, and color are included.",
+                                    "Same as Fit4 except two-way interactions cut:carat, clarity:carat, and color:carat are also included.",
+                                    "Same as Fit5 except two and three-way interactions between carat and the categorical variables cut, clarity, and color are included. "))
+
+linear_mods %>% kable(format = "latex", align = "c",
+        caption = "Linear models considered for ridge and glmnet tuning.")
+```
+
+
+
+```{r}
+the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
+                               "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
+                               "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
+                               "Glmnet Fit3", "Glmnet Fit4", "Glmnet Fit5",
+                               "Glmnet Fit6", "Glmnet Fit7"),
+                    "Mean" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                               glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean)),
+                    "std_err" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                  glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err)))
+rank_ridge <- the_best[1:7,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
+rank_glmnet <- the_best[8:14,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
+the_best$rank <- c(rank_ridge, rank_glmnet)
+best_trees <- tibble("Model" = c(rep("Tree fit", 7), rep("Random Forest Fit", 7)),
+                     "Mean" = c(tree_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(mean),
+                                rf_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(mean)),
+                     "std_err" = c(tree_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(std_err),
+                                   rf_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(std_err)),
+                     "rank" = rep(1:7, 2))
+the_best <- bind_rows(the_best, best_trees)
+the_best$rank <- factor(the_best$rank)
+the_best$model_type <- c(rep("Linear Models", 14), rep("Tree Models", 14))
+
+the_best %>%
+  ggplot(aes(x = Model, y = Mean, group = rank, fill = rank)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(aes(ymin = Mean - std_err, ymax = Mean + std_err),
+                position = "dodge", color = "black") +
+  ylab("Mean RMSE") +
+  ggtitle("Seven Best Models Selected For Each Model Type Using 10-Fold CV",
+          subtitle = "Mean RMSE used as comparison metric. Error bars are +/- 1 standard error.") +
+  theme_classic()  +
+  scale_fill_brewer(type = "seq", palette = "Paired") +
+  facet_grid(~ model_type, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1)) 
+
+```
+
+
 
 ## Final model
 
