@@ -44,6 +44,7 @@ load("Data/largediff_depth.Rda")
 load("Data/data_split.Rda")
 load("Data/train_data.Rda")
 load("Data/test_data.Rda")
+load("Data/preds_price.Rda")
 ```
 
 # Introduction
@@ -426,7 +427,7 @@ Before splitting the data, the price was natural log transformed as mentioned in
 
 Pearson correlations were computed for the numerical variables in the training data and multiple variables were found to be highly correlated (figure ?). 
 
-```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data."}
+```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data.", out.width='50%'}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -436,7 +437,7 @@ train_data %>%
 
 Pairwise examinations of the numerical variables in training set (figure ?) also found that there existed some nonlinear association between price and many of the numerical predictors. A natural log transformation of carat, x, y, and z corrected this association such that there was both a linear relationship between the response and these predictors, and a linear relationship between these predictors. These transformations would be necessary for any linear predictive model tested. 
 
-```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data."}
+```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data.", out.width='50%', dev="jpeg"}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -444,7 +445,7 @@ train_data %>%
 ```
 
 
-```{r scatterplot of vars with log trans, fig.cap="Bivariate relationships with natural log transformations."}
+```{r scatterplot of vars with log trans, fig.cap="Bivariate relationships with natural log transformations.", out.width='50%', dev="jpeg"}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -557,10 +558,40 @@ the_best %>%
 
 ```
 
+## The Random Forest Model and Further Tuning
+
+
+
+
+
+
+```{r}
+knitr::include_graphics(path = "Figures/sample_tree_plot.pdf")
+```
+
+
+
+
+```{r initial rf mtry min_n}
+rf_fit_tune %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  ggplot(aes(x = mtry, y = mean, color = min_n)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.4))  +
+  theme_minimal() +
+  scale_color_viridis_c() +
+  scale_x_continuous(breaks = 1:9) +
+  ylab("Mean RMSE") +
+  ggtitle("10-fold Cross Validation Mean RMSE Estimates\nfor RF Tuning Parameters mtry and min_n",
+          subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.") 
+```
+
 
 
 ## Final model
 
 # Results
+
+
 
 # Conclusion
