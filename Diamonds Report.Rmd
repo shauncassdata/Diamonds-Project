@@ -475,7 +475,7 @@ A technique for reducing the variance of methods like regression trees is boostr
 
 For all the preliminary models, missing values of x, y, and z were imputed using a bagged tree method as described in a previous section and carat, x, y, and z were natural log transformed. For the ridge regression and glmnet regression prediction models, the cut, color, and clarity were encoded using ordinal encoding to maintain the order of the factors and all numerical predictors were normalized. The tree models did not require encoding or normalization. 
 
-Seven different ridge regression and glmnet models were formulated. 
+Seven different linear models were formulated for the preliminary ridge and glmnet regression models (table ?). A regular grid of 50 ridge penalties was supplied for the ridge regression models. For the glmnet models a regular grid of 50 penalty values and 50 mixture values was supplied. The mixture value is the proportion of the L2 penalty (LASSO) portion of the glmnet model to the L1 (ridge) portion of the model such that a mixture = 1 means that the glmnet model is a pure LASSO model and a mixture = 0 means that the glmnet model is a pure ridge model. 
 
 ```{r}
 linear_mods <- tibble("Model" = c("Fit1", "Fit2", "Fit3",
