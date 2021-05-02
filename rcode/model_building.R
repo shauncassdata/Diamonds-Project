@@ -548,20 +548,17 @@ save(rf_fit_tune_fine, file = "Data/rf_fit_tune_fine.Rda")
 rf_fit_tune_fine %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
+  mutate(min_n = factor(min_n)) %>%
   ggplot(aes(x = mtry, y = mean, color = min_n)) +
   geom_point(size = 2, position = position_dodge2(width = 0.4)) +
   geom_linerange(aes(ymin = mean - std_err, ymax = mean + std_err),
                 show.legend = TRUE, position = position_dodge2(width = 0.4)) +
   theme_minimal() +
-  scale_color_viridis_c() +
+  scale_color_viridis_d() +
   scale_x_continuous(breaks = 5:9) +
   ylab("Mean RMSE") +
   ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
           subtitle = "Error bars represent +/- 1 standard error") 
-# mtry = 6 and min_n = 7 seems like a good canidate
-## min_n = 7 if consinstently lower than the others except mtry = 6 where it is
-## only slightly above min_n = 9.
-
 
 
 rf_fit_tune_fine %>%
@@ -609,8 +606,9 @@ five_best %>%
 
 # We can fit the model on the whole training data set and get an estimate
 # of the test error using the OOB error.
+rf_fit_tune_fine %>% select_best(metric = "rmse") #mtry = 6, min_n = 5
 
-last_rf_mod <- rand_forest(mtry = 6, min_n = 9, trees = 1000) %>%
+last_rf_mod <- rand_forest(mtry = 6, min_n = 5, trees = 1000) %>%
   set_engine("ranger", importance = "permutation") %>%
   set_mode("regression")
 
@@ -622,6 +620,45 @@ set.seed(999)
 train_rf_fit <- last_rf_wf %>%
   fit(data = train_data)
 
-train_rf_fit %>%
+train_rf_fit
+
+
+# Now use it on the training data and also make predictions on test data using
+# the training fit.
+set.seed(999)
+last_rf_fit <- last_rf_wf %>%
+  last_fit(split = data_split)
+
+
+
+last_rf_fit %>% collect_metrics %>% pull(.estimate)
+
+last_rf_fit %>%
+  pluck(".workflow", 1) %>%
   pull_workflow_fit() %>%
   vip()
+
+# Back in terms of dollars
+preds_price <- last_rf_fit %>% collect_predictions %>%
+  select(.row, .pred, price) %>%
+  mutate(.pred = exp(.pred)) %>%
+  mutate(price = exp(price))
+
+save(preds_price, file = "Data/preds_price.Rda")
+
+preds_price %>%
+  ggplot(aes(x = .pred, y = price)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1)
+
+preds_price %>% rmse(truth  = price, estimate = .pred)
+
+abs_diff <- preds_price %>% mutate(diff = abs(.pred - price)) %>% select(.row, diff)
+
+abs_diff %>%
+  ggplot(aes(diff)) +
+  geom_density()
+
+test_data %>% filter(id == (abs_diff %>% slice_min(diff) %>% pull(.row)))
+test_data %>% filter(id == (abs_diff %>% slice_max(diff) %>% pull(.row)))
+
