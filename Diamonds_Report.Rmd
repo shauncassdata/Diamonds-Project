@@ -427,7 +427,7 @@ Before splitting the data, the price was natural log transformed as mentioned in
 
 Pearson correlations were computed for the numerical variables in the training data and multiple variables were found to be highly correlated (figure ?). 
 
-```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data.", out.width='50%'}
+```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data."}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -464,7 +464,7 @@ train_data %>%
 
 As seen in the previous sections, there were two main hurdles to overcome in building an accurate predictive model for this data. The first was that many of the numerical predictors were highly correlated with one another. The second obstacle was that due to the large amount of levels for each categorical variable, there may exist two-way or even three-way interactions that may impact the accuracy of the predictions. The size of the interaction effects was not deemed important for predicting the price, instead these interactions needed to just be considered in building a model. 
 
-Four different types of preliminary predictive models were tested using 10-fold cross-validation: ridge regression, glmnet regression, single tree model, and a random forest model. 
+Four different types of preliminary predictive models were tuned and tested using 10-fold cross-validation: ridge regression, glmnet regression, single tree model, and a random forest model. 
 
 A ridge regression was considered as the squared L2 penalty on coefficients of a linear model can help overcome multicollinearity between the predictors. This penalty shrinks the regression coefficients, but never truly makes any of them equal to zero.
 
@@ -478,6 +478,12 @@ For all the preliminary models, missing values of x, y, and z were imputed using
 
 Seven different linear models were formulated for the preliminary ridge and glmnet regression models (table ?). A regular grid of 50 ridge penalties was supplied for the ridge regression models. For the glmnet models a regular grid of 50 penalty values and 50 mixture values was supplied. The mixture value is the proportion of the L2 penalty (LASSO) portion of the glmnet model to the L1 (ridge) portion of the model such that a mixture = 1 means that the glmnet model is a pure LASSO model and a mixture = 0 means that the glmnet model is a pure ridge model. 
 
+To tune the regression tree, a regular grid of 20 values for the cost complexity, the maximum tree depth, and min_n (the minimum number of data points for a node to be split further) were supplied. The cost complexity parameter is a penalty that limits the size of trees. A larger value of the cost complexity parameter results in a smaller tree while a smaller value results in a larger tree. 
+
+The initial random forest was tuned using a regular grid of 20 values for mtry (the number of predictors that will be randomly sampled at each split when creating the trees) and min_n which is the same parameter as used in the regression tree.
+
+
+
 ```{r}
 linear_mods <- tibble("Model" = c("Fit1", "Fit2", "Fit3",
                                "Fit4", "Fit5", "Fit6",
@@ -487,13 +493,21 @@ linear_mods <- tibble("Model" = c("Fit1", "Fit2", "Fit3",
                                     "Same as Fit1 except two-way interactions cut:carat, clarity:carat, and color:carat are included.",
                                     "Same as Fit1 except all two-way interactions between cut, clarity, and color are included.",
                                     "Same as Fit4 except all three-way interactions between cut, clarity, and color are included.",
-                                    "Same as Fit4 except two-way interactions cut:carat, clarity:carat, and color:carat are also included.",
-                                    "Same as Fit5 except two and three-way interactions between carat and the categorical variables cut, clarity, and color are included. "))
+                                    "Same as Fit4 except two-way interactions cut:carat, clarity:carat,\nand color:carat are also included.",
+                                    "Same as Fit5 except two and three-way interactions between carat and\nthe categorical variables cut, clarity, and color are included. "))
 
 linear_mods %>% kable(format = "latex", align = "c",
-        caption = "Linear models considered for ridge and glmnet tuning.")
+        caption = "Linear models considered for ridge and glmnet tuning.") %>%
+  column_spec(column = 2, width = "17em")
 ```
 
+These preliminary models were tuned and tested using 10-fold cross-validation. A K-fold cross-validation procedure seeks to provide an estimate of the test error by splitting the training data into k roughly equal folds. Each fold is tested such that a model is trained on k-1 of the folds and predictions are made on the remaining fold. An estimate of the prediction error is computed and the procedure is repeated such that predictions for each fold are only computed once. If you let $k:\{1,...,N\}->\{1,...,K\}$ be an indexing function that indicates the fold to which the observation $i$ is allocated and let $\hat{f}^{-k}(x)$ be the fitted function with the k part of the data removed, then the cross-validation estimate of the prediction error is:
+$$CV(\hat{f})=\frac{1}{N}\sum_{i=1}^NL(y_i,f^{-k(i)}(x_i))$$
+
+Typically a K value of 5 or 10 is chosen (ESLII 260 - 261). A K value of 10 was chosen for the diamonds data due to the size of the data and the number of different combinations of the categorical values. The prediction error estimate chosen for each step of the 10-fold cross-validation was the root mean squared error (RMSE) which as the name implies is just the square root of the common error metric the mean squared error:
+$$RMSE = \sqrt{MSE}=\sqrt{\frac{1}{n}\sum_{i=1}^N(Y_i-\hat{Y}_i)^2}$$
+
+The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
 
 
 ```{r}
@@ -550,7 +564,7 @@ the_best %>%
                 position = "dodge", color = "black") +
   ylab("Mean RMSE") +
   ggtitle("Seven Best Models Selected For Each Model Type Using 10-Fold CV",
-          subtitle = "Mean RMSE used as comparison metric. Error bars are +/- 1 standard error.") +
+          subtitle = "Error bars are +/- 1 standard error.") +
   theme_classic()  +
   scale_fill_brewer(type = "seq", palette = "Paired") +
   facet_grid(~ model_type, scales = "free") +
@@ -560,12 +574,26 @@ the_best %>%
 
 ## The Random Forest Model and Further Tuning
 
+As mentioned before, a random forest is a form of bootstrap aggregation of regression or classification trees. A simple regression tree like the one shown in figure ? seeks to recursively partition the feature space using binary splits and model the response as a constant in each region. A greedy algorithm for creating such a tree is described in The Elements of Statistical Learning as follows (ESL 326): 
+* Starting with all the data, consider a splitting variable $j$ and split point $s$, and define the half-planes:
 
+$R_1(j,s)=\{X|X_j<=s\}$ and $R_2(j,s)=\{X|X_j>s\}$
 
+* Then we seek the splitting variable $j$ and split point $s$ that solve
 
+$$min_{j,s}[min_{c_1}\sum_{x_i\in R_1(j,s)}(y_i-c_1)^2+min_{c_1}\sum_{x_i\in R_2(j,s)}(y_i-c_2)^2]$$
 
+* For any choice j and s, the inner minimization is solved by:
 
-```{r}
+$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$ and $\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$
+
+* Having found the best split, we partition the data into two resulting regions and repeat the splitting process on each of the two regions.
+
+* This is done until the tree is grown to a sufficient size as dictated by parameters such as the cost complexity and the minimum number of observations required for a node to be split further. 
+
+A tree is a relatively simple model and is easily interpretable. As seen in figure ?, the tree starts at the root node at the top and binary splits subject to a condition are made on various predictors. If the condition is true then observations follow the split to the left while the other observations follow the split to the right. The terminal nodes at the bottom of the tree are the resulting predictions of the response for any observations that end up in these final regions.
+
+```{r sample tree plot, fig.cap="Simple regression tree of 100 random samples from the training data."}
 knitr::include_graphics(path = "Figures/sample_tree_plot.pdf")
 ```
 
@@ -577,7 +605,9 @@ rf_fit_tune %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
   ggplot(aes(x = mtry, y = mean, color = min_n)) +
-  geom_point(size = 2, position = position_dodge2(width = 0.4))  +
+  geom_point(size = 0.5, position = position_dodge2(width = 0.4)) +
+  geom_linerange(aes(ymin = mean - std_err, ymax = mean + std_err),
+                 show.legend = TRUE, position = position_dodge2(width = 0.4)) +
   theme_minimal() +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = 1:9) +
@@ -591,6 +621,37 @@ rf_fit_tune %>%
 ## Final model
 
 # Results
+
+```{r preds vs obs}
+
+final_rmse <- preds_price %>% rmse(truth = price, estimate = .pred)
+
+preds_price %>%
+  ggplot(aes(x = price, y = .pred)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  ylab("Predicted Price (US Dollars)") +
+  xlab("Observed Price (US Dollars)") +
+  ggtitle("Predicted Price vs. Observed Price") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  scale_y_continuous(labels = scales::label_dollar()) +
+  geom_text(aes(x = 2500, y = 15000,
+                label = paste0("RMSE = ","$", round(final_rmse$.estimate, 0)))) +
+  theme_bw()
+```
+
+
+```{r dist of abs diff}
+preds_price <- preds_price %>% mutate(absdiff = abs(.pred - price))
+
+preds_price %>%
+  ggplot(aes(absdiff)) +
+  geom_density( fill = "mediumslateblue") +
+  ylab("Density") +
+  xlab("Absolute Difference Between Predicted and Observed Prices") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  theme_minimal()
+```
 
 
 
