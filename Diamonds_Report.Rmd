@@ -437,7 +437,7 @@ train_data %>%
 
 Pairwise examinations of the numerical variables in training set (figure ?) also found that there existed some nonlinear association between price and many of the numerical predictors. A natural log transformation of carat, x, y, and z corrected this association such that there was both a linear relationship between the response and these predictors, and a linear relationship between these predictors. These transformations would be necessary for any linear predictive model tested. 
 
-```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data.", out.width='50%', dev="jpeg"}
+```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data.", out.width='75%', dev="jpeg"}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -445,7 +445,7 @@ train_data %>%
 ```
 
 
-```{r scatterplot of vars with log trans, fig.cap="Bivariate relationships with natural log transformations.", out.width='50%', dev="jpeg"}
+```{r scatterplot of vars with log trans, fig.cap="Bivariate relationships with natural log transformations.", out.width='75%', dev="jpeg"}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
@@ -462,9 +462,9 @@ train_data %>%
 
 ## Preliminary models and tuning
 
-As seen in the previous sections, there were two main hurdles to overcome in building an accurate predictive model for this data. The first was that many of the numerical predictors were highly correlated with one another. The second obstacle was that due to the large amount of levels for each categorical variable, there may exist two-way or even three-way interactions that may impact the accuracy of the predictions. The size of the interaction effects was not deemed important for predicting the price, instead these interactions needed to just be considered in building a model. 
+As seen in the previous sections, there were two main hurdles to overcome in building an accurate predictive model for the diamonds in this data set. The first was that many of the numerical predictors were highly correlated with one another. The second obstacle was that due to the large amount of levels for each categorical variable, there may exist two-way or even three-way interactions that may impact the accuracy of the predictions. The size of the interaction effects was not deemed important for predicting the price, instead these interactions needed to just be considered in building a model. 
 
-Four different types of preliminary predictive models were tuned and tested using 10-fold cross-validation: ridge regression, glmnet regression, single tree model, and a random forest model. 
+Four different types of preliminary predictive models were tuned and tested using 10-fold cross-validation in an attempt to overcome these hurdles: ridge regression, glmnet regression, single tree model, and a random forest model. 
 
 A ridge regression was considered as the squared L2 penalty on coefficients of a linear model can help overcome multicollinearity between the predictors. This penalty shrinks the regression coefficients, but never truly makes any of them equal to zero.
 
@@ -480,7 +480,7 @@ Seven different linear models were formulated for the preliminary ridge and glmn
 
 To tune the regression tree, a regular grid of 20 values for the cost complexity, the maximum tree depth, and min_n (the minimum number of data points for a node to be split further) were supplied. The cost complexity parameter is a penalty that limits the size of trees. A larger value of the cost complexity parameter results in a smaller tree while a smaller value results in a larger tree. 
 
-The initial random forest was tuned using a regular grid of 20 values for mtry (the number of predictors that will be randomly sampled at each split when creating the trees) and min_n which is the same parameter as used in the regression tree.
+The initial random forest was tuned using a regular grid of 20 values for mtry (the number of predictors that will be randomly sampled at each split when creating the trees) and min_n which is the same parameter as used in the regression tree. A total of 1000 trees was produced for each random forest model tested. Due to only having 43,156 observations in the training data and 9 predictors, it was determined that 1000 trees should be a sufficient amount based on the number of trees required for prediction error stabilization on other similarily sized data sets (ESLII 390 & 610).
 
 
 
@@ -506,8 +506,7 @@ $$CV(\hat{f})=\frac{1}{N}\sum_{i=1}^NL(y_i,f^{-k(i)}(x_i))$$
 
 Typically a K value of 5 or 10 is chosen (ESLII 260 - 261). A K value of 10 was chosen for the diamonds data due to the size of the data and the number of different combinations of the categorical values. The prediction error estimate chosen for each step of the 10-fold cross-validation was the root mean squared error (RMSE) which as the name implies is just the square root of the common error metric the mean squared error:
 $$RMSE = \sqrt{MSE}=\sqrt{\frac{1}{n}\sum_{i=1}^N(Y_i-\hat{Y}_i)^2}$$
-
-The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
+An advantage of using the RMSE instead of just the MSE is that the prediction error is in the same units as the response. The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
 
 
 ```{r}
@@ -575,21 +574,22 @@ the_best %>%
 ## The Random Forest Model and Further Tuning
 
 As mentioned before, a random forest is a form of bootstrap aggregation of regression or classification trees. A simple regression tree like the one shown in figure ? seeks to recursively partition the feature space using binary splits and model the response as a constant in each region. A greedy algorithm for creating such a tree is described in The Elements of Statistical Learning as follows (ESL 326): 
+
 * Starting with all the data, consider a splitting variable $j$ and split point $s$, and define the half-planes:
 
 $R_1(j,s)=\{X|X_j<=s\}$ and $R_2(j,s)=\{X|X_j>s\}$
 
 * Then we seek the splitting variable $j$ and split point $s$ that solve
 
-$$min_{j,s}[min_{c_1}\sum_{x_i\in R_1(j,s)}(y_i-c_1)^2+min_{c_1}\sum_{x_i\in R_2(j,s)}(y_i-c_2)^2]$$
+$$min_{j,s}[min_{c_1}\sum_{x_i\in R_1(j,s)}(y_i-c_1)^2+min_{c_2}\sum_{x_i\in R_2(j,s)}(y_i-c_2)^2]$$
 
 * For any choice j and s, the inner minimization is solved by:
 
-$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$ and $\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$
+$$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$$ and $$\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$$
 
 * Having found the best split, we partition the data into two resulting regions and repeat the splitting process on each of the two regions.
 
-* This is done until the tree is grown to a sufficient size as dictated by parameters such as the cost complexity and the minimum number of observations required for a node to be split further. 
+* This is done until the tree is grown to a sufficient size as dictated by parameters such as the cost complexity and the minimum number of observations required for a node to be split further. If the feature space is partitioned into M regions ($R_1,R_2,...,R_M$) then the final prediction is the $\hat{c}_m$ of the region that an observation resides in.
 
 A tree is a relatively simple model and is easily interpretable. As seen in figure ?, the tree starts at the root node at the top and binary splits subject to a condition are made on various predictors. If the condition is true then observations follow the split to the left while the other observations follow the split to the right. The terminal nodes at the bottom of the tree are the resulting predictions of the response for any observations that end up in these final regions.
 
@@ -597,7 +597,7 @@ A tree is a relatively simple model and is easily interpretable. As seen in figu
 knitr::include_graphics(path = "Figures/sample_tree_plot.pdf")
 ```
 
-
+A random forest is an ensemble of hundreds or even thousands of these trees. To build each tree, a boostrap sample (a sample with replacement) the same size of the training data is taken from the training data. The tree is then recursively grown the normal way a regression tree is grown except that each terminal node is split only considering $m$ variables out of the total number of variables. The best variable/split point is picked among the $m$ and the tree is recursively grown until the minimum node size min_n is reached. Final predictions are made by averaging all of the trees (ESLII 607).
 
 
 ```{r initial rf mtry min_n}
@@ -616,23 +616,44 @@ rf_fit_tune %>%
           subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.") 
 ```
 
+It was apparent for the initial random forest models tested using cross-validation that higher values of $m$ (mtry) and lower values of min_n produced better predictions for the diamonds (figure ?). A finer grid of values for these parameters was tested again on the same cross-validation folds (figure ?) and the final random forest model was chosen with an mtry = 6 and a min_n = 5. This model had a cross-validation mean RMSE of 0.0885 with a standard error of 0.000526. A separate, final measure of the estimated test error was computed after training this random forest model on the entire training set using the out-of-bag (OOB) samples. The OOB predictions are the predictions made on observations using only the regression trees grown that did not contain the observation in the bootstrap sample. The OOB error estimate is almost identitical to an N-fold cross-validation and in this case was exactly identitical with the OOB estimate of the RMSE equal to 0.0885. This trained model was then used to make predictions on the diamonds in the test data set.
+```{r fine tune rf mtry min_n}
+rf_fit_tune_fine %>%
+  collect_metrics() %>%
+  filter(.metric == "rmse") %>%
+  mutate(min_n = factor(min_n)) %>%
+  ggplot(aes(x = mtry, y = mean, color = min_n)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.4)) +
+  geom_linerange(aes(ymin = mean - std_err, ymax = mean + std_err),
+                show.legend = TRUE, position = position_dodge2(width = 0.4)) +
+  theme_minimal() +
+  scale_color_viridis_d() +
+  scale_x_continuous(breaks = 5:9) +
+  ylab("Mean RMSE") +
+  ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
+          subtitle = "Error bars represent +/- 1 standard error")
+```
 
-
-## Final model
 
 # Results
 
+The final RMSE using the test set was 0.0867 log US Dollars which means the model made better predictions for the diamonds then the cross-validation approach originally assumed it would. To fully understand how well the model predicted the price of the diamonds in the data set, the predictions were transformed back into US dollars and rounded to the nearest dollar to match the format of the original price of the diamonds. As seen in figure ?, the model performed better for lower priced diamonds, but fared worse as the price of the diamond increased.  
+
+
 ```{r preds vs obs}
+preds_price <- preds_price %>%
+  mutate(.pred = round(.pred, 0))
 
 final_rmse <- preds_price %>% rmse(truth = price, estimate = .pred)
 
 preds_price %>%
   ggplot(aes(x = price, y = .pred)) +
   geom_point() +
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  geom_abline(aes(intercept = 0, slope = 1, color = "red"), linetype = "dashed") +
   ylab("Predicted Price (US Dollars)") +
   xlab("Observed Price (US Dollars)") +
   ggtitle("Predicted Price vs. Observed Price") +
+  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = "1:1") +
   scale_x_continuous(labels = scales::label_dollar()) +
   scale_y_continuous(labels = scales::label_dollar()) +
   geom_text(aes(x = 2500, y = 15000,
