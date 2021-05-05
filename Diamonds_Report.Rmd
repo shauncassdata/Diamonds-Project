@@ -647,14 +647,18 @@ preds_price <- preds_price %>%
 
 final_rmse <- preds_price %>% rmse(truth = price, estimate = .pred)
 
-preds_price %>%
-  ggplot(aes(x = price, y = .pred)) +
-  geom_point() +
+a <- test_data[!complete.cases(test_data),] %>% pull(id)
+  ggplot() +
+  geom_point(mapping = aes(x = preds_price %>% filter(!(.row %in% a)) %>% pull(price),
+             y = preds_price %>% filter(!(.row %in% a)) %>% pull(.pred))) +
+  geom_point(mapping = aes(x = preds_price %>% filter(.row %in% a) %>% pull(price),
+             y = preds_price %>% filter(.row %in% a) %>% pull(.pred), fill = "Contained NA"), shape = 21) +
   geom_abline(aes(intercept = 0, slope = 1, color = "red"), linetype = "dashed") +
   ylab("Predicted Price (US Dollars)") +
   xlab("Observed Price (US Dollars)") +
   ggtitle("Predicted Price vs. Observed Price") +
-  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = "1:1") +
+  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = c("1:1")) +
+  scale_fill_manual(name = NULL, values = c("Contained NA" = "cyan"), labels = "Contained NAs") +
   scale_x_continuous(labels = scales::label_dollar()) +
   scale_y_continuous(labels = scales::label_dollar()) +
   geom_text(aes(x = 2500, y = 15000,
@@ -678,7 +682,7 @@ preds_price %>%
 ```
 In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference provided insight into how close each prediction was to the original price point, practically speaking an absolute difference of \$100 is worse for a \$400 diamond than a \$8000 diamond. The percent error between the observed and predicted diamond prices can be calculated as:
 $$\%error=\frac{Price_{predicted} - Price_{observed}}{Price_{observed}}$$
-It was thought that this calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, the distribution of this calculation proved useful in determining if the model typically undervalued the diamonds or overvalued the diamonds (figure ?). For this distribution, the sample standard deviation was 8.73%, the sample 10th percentile was -9.06%, the median was -0.39%, the mean was 0.27% with an estimated standard deviation of 0.09%, and the sample 90th percentile was 10.30%. Overall, it appeared that the model tended to slightly undervalue the diamonds. 
+It was thought that this calculation may be more useful for some buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, the distribution of this calculation proved useful in determining if the model typically undervalued the diamonds or overvalued the diamonds (figure ?). For this distribution, the sample standard deviation was 8.73%, the sample 10th percentile was -9.06%, the median was -0.39%, the mean was 0.27% with an estimated standard deviation of 0.09%, and the sample 90th percentile was 10.30%. Overall, it appeared that the model tended to slightly undervalue the diamonds. 
 
 ```{r perc diff dist, out.width='125%'}
 preds_price <- preds_price %>%
@@ -702,7 +706,7 @@ preds_price %>%
   ggtitle("Distribution of the Percent Error\nBetween the Predicted and Observed Prices")
 ```
 
-
+As the original data set, the training set, and the test set mostly contained lower priced diamonds and lower to medium priced round cut diamonds may be more routinely bought and sold for the use of everyday jewelry, it was thought that the accuracy of the random forest model should be examined for certain price ranges. Tables ? and ? split the original prices of the diamonds into three categories based on the price of the observed diamonds: price < \$5000, \$5000 <= price < \$10000, and price > \$10000. As expected, the predictions for the diamonds < \$5000 performed better overall compared to the other two categories when it came to the absolute difference between predicted and observed prices. When it came to the absolute percent error, the higher priced diamonds fared better, but it is important to keep in mind that this is due to the absolute percent error being scaled relative to the diamond's price e.g. $1\%*\$5000=\$500$ and $1\%*\$10000=\$1000$. 
 
 ```{r split_df}
 # Tried to use count() here, but it was giving weird results
@@ -824,6 +828,6 @@ perc_split_df %>%
         col.names = c("Price Group", "|%error| < 1%", "|%error| < 5%", "|%error| < 10%", "|%error| < 20%"))
 ```
 
-
+All the predictors were kept in the random forest model
 
 # Conclusion
