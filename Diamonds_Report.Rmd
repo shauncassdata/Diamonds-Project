@@ -828,6 +828,11 @@ perc_split_df %>%
         col.names = c("Price Group", "|%error| < 1%", "|%error| < 5%", "|%error| < 10%", "|%error| < 20%"))
 ```
 
-All the predictors were kept in the random forest model
+All the predictors were kept in the random forest model in case there was any complex interactions between the variables that may lead to better predictions. However, the depth (total depth percentage) and table (table percentage) seemed unlikely to help on their own based on the previous bivariate plots between these variables and price. The importance of these variables and the other predictors in this random forest model were studied using a *permutation variable-importance measure* constructed from the OOB samples. When the $b$th tree is grown the prediction accuracy is recorded from the OOB samples. The values for the $j$th variable are then randomly permuted in the OOB samples and the prediction accuracy is again recorded. This decrease in accuracy is measured for every tree and averaged over all the trees (ESLII 612). This permuted average decrease in accuracy is shown for all variables in figure ? with the OOB prediction error measure being the MSE for the natural log of the original prices. Table and depth were the least important variables in this model with cut only having a slightly larger importance than depth or table. Notably, the most important categorical variable in this model appeared to be clarity.
+
+![Permutation importance plot for the fitted random forest. Importance is measured using the average decrease in OOB MSE.](Figures/permimportance.jpg)
+
+
 
 # Conclusion
+

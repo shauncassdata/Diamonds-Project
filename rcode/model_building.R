@@ -511,15 +511,15 @@ rf_fit_tune %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
   ggplot(aes(x = mtry, y = mean, color = min_n)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err),
-                 show.legend = TRUE) +
+  geom_point(size = 2, position = position_dodge2(width = 0.4)) +
+  geom_linerange(aes(ymin = mean - std_err, ymax = mean + std_err),
+                 show.legend = TRUE, position = position_dodge2(width = 0.4)) +
   theme_minimal() +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = 1:9) +
   ylab("Mean RMSE") +
   ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
-          subtitle = "Error bars represent +/- 1 standard error") 
+          subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.") 
 # It appears higher mtry values and lower min_n values result in a smaller RMSE
 
 
@@ -636,7 +636,10 @@ last_rf_fit %>% collect_metrics %>% pull(.estimate)
 last_rf_fit %>%
   pluck(".workflow", 1) %>%
   pull_workflow_fit() %>%
-  vip()
+  vip() +
+  theme_bw() +
+  ggtitle("Permutation Importance for Each Variable")
+ggsave(filename = "Figures/permimportance.jpg")
 
 # Back in terms of dollars
 preds_price <- last_rf_fit %>% collect_predictions %>%
@@ -653,12 +656,42 @@ preds_price %>%
 
 preds_price %>% rmse(truth  = price, estimate = .pred)
 
-abs_diff <- preds_price %>% mutate(diff = abs(.pred - price)) %>% select(.row, diff)
+preds_price <- preds_price %>% mutate(absdiff = abs(.pred - price))
 
-abs_diff %>%
-  ggplot(aes(diff)) +
+preds_price %>%
+  ggplot(aes(absdiff)) +
   geom_density()
 
-test_data %>% filter(id == (abs_diff %>% slice_min(diff) %>% pull(.row)))
-test_data %>% filter(id == (abs_diff %>% slice_max(diff) %>% pull(.row)))
+preds_price <- preds_price %>%
+  mutate("Price_range" = case_when(price < 5000 ~ "Price < $5000",
+                                   5000 <= price & price < 10000 ~ "$5000 <= Price < 10000",
+                                   price >= 10000 ~ "Price >= 10000"))
 
+preds_price %>%
+  group_by(Price_range) %>%
+  summarise(rmse = sqrt((1/n())*sum((.pred - price)^2)))
+
+
+preds_price %>%
+  filter(absdiff <= 100) %>%
+  count()/10784
+preds_price %>%
+  filter(absdiff <= 200) %>%
+  count()/10784
+preds_price %>%
+  filter(absdiff <= 300) %>%
+  count()/10784
+preds_price %>%
+  filter(absdiff <= 400) %>%
+  count()/10784
+preds_price %>%
+  filter(absdiff <= 500) %>%
+  count()/10784
+
+diamonds %>% filter(price < 5000) %>% count()/53940
+diamonds %>% filter(price >= 5000 & price < 10000) %>% count()/53940
+diamonds %>% filter(price >= 10000) %>% count()/53940
+
+test_data %>% filter(exp(price) < 5000) %>% count()/10784
+test_data %>% filter(exp(price) >= 5000 & price < 10000) %>% count()/10784
+test_data %>% filter(exp(price) >= 10000) %>% count()/10784
