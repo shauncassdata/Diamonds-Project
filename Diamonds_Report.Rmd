@@ -678,7 +678,7 @@ preds_price %>%
 ```
 In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference provided insight into how close each prediction was to the original price point, practically speaking an absolute difference of \$100 is worse for a \$400 diamond than a \$8000 diamond. The percent error between the observed and predicted diamond prices can be calculated as:
 $$\%error=\frac{Price_{predicted} - Price_{observed}}{Price_{observed}}$$
-This calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the predictions 
+It was thought that this calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, this calculation 
 
 ```{r perc diff dist, out.width='125%'}
 preds_price <- preds_price %>%
@@ -783,35 +783,35 @@ split_df %>%
 ```{r perc_split_df}
 # Figured out I have to unlist() count, but not enough time or energy to go back and clean up split_df.
 perc_split_df <- data.frame("price_group" = split_df$price_group,
-                            percerr_1 <- c(preds_price %>% filter(price < 5000 & percent_err < 1) %>%
+                            percerr_1 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 1) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_err < 1 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & abs(percent_err) < 1 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_err < 1) %>%
+                                            preds_price %>% filter(price >= 10000 & abs(percent_err) < 1) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_5 <- c(preds_price %>% filter(price < 5000 & percent_err < 5) %>%
+                            percerr_5 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 5) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_err < 5 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & abs(percent_err) < 5 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_err < 5) %>%
+                                            preds_price %>% filter(price >= 10000 & abs(percent_err) < 5) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_10 <- c(preds_price %>% filter(price < 5000 & percent_err < 10) %>%
+                            percerr_10 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 10) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_err < 10 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & abs(percent_err) < 10 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_err < 10) %>%
+                                            preds_price %>% filter(price >= 10000 & abs(percent_err) < 10) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_15 <- c(preds_price %>% filter(price < 5000 & percent_err < 15) %>%
+                            percerr_15 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 15) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_err < 15 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & abs(percent_err) < 15 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_err < 15) %>%
+                                            preds_price %>% filter(price >= 10000 & abs(percent_err) < 15) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_20 <- c(preds_price %>% filter(price < 5000 & percent_err < 20) %>%
+                            percerr_20 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 20) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_err < 20 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & abs(percent_err) < 20 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_err < 20) %>%
+                                            preds_price %>% filter(price >= 10000 & abs(percent_err) < 20) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist())
 colnames(perc_split_df) <- c("price_group", "percerr_1", "percerr_5", "percerr_10", "percerr_15", "percerr_20")
 ```
