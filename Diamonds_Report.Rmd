@@ -821,7 +821,7 @@ perc_split_df %>%
   mutate(across(2:6, ~round(.x*100, 1))) %>%
   mutate(across(2:6, ~paste0(as.character(.x), "%"))) %>%
   kable(format = "latex", align = "c",
-        col.names = c("Price Group", "%error < 1%", "%error < 5%", "%error < 10%", "%error < 20%"))
+        col.names = c("Price Group", "|%error| < 1%", "|%error| < 5%", "|%error| < 10%", "|%error| < 20%"))
 ```
 
 
