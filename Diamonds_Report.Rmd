@@ -484,7 +484,7 @@ The initial random forest was tuned using a regular grid of 20 values for mtry (
 
 
 
-```{r}
+```{r linear models considered table}
 linear_mods <- tibble("Model" = c("Fit1", "Fit2", "Fit3",
                                "Fit4", "Fit5", "Fit6",
                                "Fit7"),
@@ -501,15 +501,15 @@ linear_mods %>% kable(format = "latex", align = "c",
   column_spec(column = 2, width = "17em")
 ```
 
-These preliminary models were tuned and tested using 10-fold cross-validation. A K-fold cross-validation procedure seeks to provide an estimate of the test error by splitting the training data into k roughly equal folds. Each fold is tested such that a model is trained on k-1 of the folds and predictions are made on the remaining fold. An estimate of the prediction error is computed and the procedure is repeated such that predictions for each fold are only computed once. If you let $k:\{1,...,N\}->\{1,...,K\}$ be an indexing function that indicates the fold to which the observation $i$ is allocated and let $\hat{f}^{-k}(x)$ be the fitted function with the k part of the data removed, then the cross-validation estimate of the prediction error is:
+These preliminary models were tuned and tested using 10-fold cross-validation. A K-fold cross-validation procedure seeks to provide an estimate of the test error by splitting the training data into k roughly equal folds. Each fold is tested such that a model is trained on k-1 of the folds and predictions are made on the remaining fold. An estimate of the prediction error is computed and the procedure is repeated such that predictions for each fold are only computed once. If you let $k:\{1,...,N\}\ ->\ \{1,...,K\}$ be an indexing function that indicates the fold to which the observation $i$ is allocated and let $\hat{f}^{-k}(x)$ be the fitted function with the k part of the data removed, then the cross-validation estimate of the prediction error is:
 $$CV(\hat{f})=\frac{1}{N}\sum_{i=1}^NL(y_i,f^{-k(i)}(x_i))$$
 
-Typically a K value of 5 or 10 is chosen (ESLII 260 - 261). A K value of 10 was chosen for the diamonds data due to the size of the data and the number of different combinations of the categorical values. The prediction error estimate chosen for each step of the 10-fold cross-validation was the root mean squared error (RMSE) which as the name implies is just the square root of the common error metric the mean squared error:
+Typically a K value of 5 or 10 is chosen (ESLII 260 - 261). A K value of 10 was chosen for the diamonds data due to the size of the data and the number of different combinations of the categorical values. The prediction error estimate chosen for each step of the 10-fold cross-validation (the loss function $L()$) was the root mean squared error (RMSE) which as the name implies is just the square root of the common error metric the mean squared error:
 $$RMSE = \sqrt{MSE}=\sqrt{\frac{1}{n}\sum_{i=1}^N(Y_i-\hat{Y}_i)^2}$$
-An advantage of using the RMSE instead of just the MSE is that the prediction error is in the same units as the response. The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
+Here $n$ is the sample size of the fold left out for prediction, $Y_i$ is the observed price, and $\hat{Y}_i$ is the predicted price. An advantage of using the RMSE instead of just the MSE is that the prediction error is in the same units as the response. The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
 
 
-```{r}
+```{r seven best models graph}
 the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
                                "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
                                "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
@@ -585,7 +585,7 @@ $$min_{j,s}[min_{c_1}\sum_{x_i\in R_1(j,s)}(y_i-c_1)^2+min_{c_2}\sum_{x_i\in R_2
 
 * For any choice j and s, the inner minimization is solved by:
 
-$$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$$ and $$\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$$
+$$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$$  $$\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$$
 
 * Having found the best split, we partition the data into two resulting regions and repeat the splitting process on each of the two regions.
 
@@ -630,8 +630,8 @@ rf_fit_tune_fine %>%
   scale_color_viridis_d() +
   scale_x_continuous(breaks = 5:9) +
   ylab("Mean RMSE") +
-  ggtitle("10-fold Cross Validation Mean RMSE Estimates for RF Tuning Parameters mtry and min_n",
-          subtitle = "Error bars represent +/- 1 standard error")
+  ggtitle("10-fold Cross Validation Mean RMSE Estimates/nfor RF Tuning Parameters mtry and min_n",
+          subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.")
 ```
 
 
@@ -665,8 +665,6 @@ preds_price %>%
 To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with a corresponding standard deviation of \$4, a sample median of \$93, and a sample 75th percentile (the point at which 75% of the data is at or smaller than this value) of \$286. This further cemented the notion that a particular subset of the predictions fared much worse than others. 
 
 ```{r dist of abs diff}
-preds_price <- preds_price %>% mutate(absdiff = abs(.pred - price))
-
 preds_price %>%
   ggplot(aes(absdiff)) +
   geom_density( fill = "mediumslateblue", alpha = 0.8) +
@@ -678,15 +676,16 @@ preds_price %>%
   theme_minimal() +
   ggtitle("Distribution of the Absolute Difference\nBetween the Predicted and Observed Prices")
 ```
-In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference 
+In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference provided insight into how close each prediction was to the original price point, practically speaking an absolute difference of \$100 is worse for a \$400 diamond than a \$8000 diamond. The percent error between the observed and predicted diamond prices can be calculated as:
+$$\%error=\frac{Price_{predicted} - Price_{observed}}{Price_{observed}}$$
+This calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the predictions 
 
-
-```{r}
+```{r perc diff dist, out.width='125%'}
 preds_price <- preds_price %>%
-  mutate(percent_diff = ((.pred - price)/price)*100)
+  mutate(percent_err = ((.pred - price)/price)*100)
 
 preds_price %>%
-  ggplot(aes(x = percent_diff)) +
+  ggplot(aes(x = percent_err)) +
   geom_density(fill = "olivedrab3", alpha = 0.8) +
   theme_minimal() +
   scale_x_continuous(labels = scales::label_percent(scale = 1)) +
@@ -696,16 +695,16 @@ preds_price %>%
                arrow = arrow(length = unit(0.5, "cm")), color = "blue") +
   annotate("text", x = -30, y = 0.025, label = "Model predicted the price\nto be lower than it was") +
   annotate("text", x = 30, y = 0.025, label = "Model predicted the price\nto be higher than it was") +
-  geom_vline(aes(xintercept = quantile(percent_diff, 0.25), color = "25th Percentile"), linetype = "dashed") +
-  geom_vline(aes(xintercept = quantile(percent_diff, 0.75), color = "75th Percentile"), linetype = "twodash") +
-  xlab("Percent Difference") +
+  geom_vline(aes(xintercept = quantile(percent_err, 0.25), color = "25th Percentile"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(percent_err, 0.75), color = "75th Percentile"), linetype = "twodash") +
+  xlab("Percent Error") +
   ylab("Density") +
-  ggtitle("Distribution of the Percent Difference\nBetween the Predicted and Observed Prices")
+  ggtitle("Distribution of the Percent Error\nBetween the Predicted and Observed Prices")
 ```
 
 
 
-```{r}
+```{r split_df}
 # Tried to use count() here, but it was giving weird results
 split_df <- data.frame("price_group" = ordered(c("price < $5000", "$5000 <= price < $10000", "$10000 <= price"),
                                                levels = c("price < $5000", "$5000 <= price < $10000", "$10000 <= price")),
@@ -769,51 +768,61 @@ split_df <- data.frame("price_group" = ordered(c("price < $5000", "$5000 <= pric
 ```
 
 
-```{r}
+```{r split table}
 split_df %>%
   mutate(across(c(2:4,6:10), ~round(.x*100, 1))) %>%
-  mutate(across(c(2:4,6:10), ~paste0(as.character(.x), "\\%"))) %>%
-  mutate(across(c(5), ~paste0("\\$", as.character(.x)))) %>%
-  kable(format = "latex", align = "c")
+  mutate(across(c(2:4,6:10), ~paste0(as.character(.x), "%"))) %>%
+  mutate(across(c(5), ~paste0("$", as.character(.x)))) %>%
+  kable(format = "latex", align = "c",
+        col.names = c("Price Group", "% in Diamonds", "% in Train", "% in Test", "RMSE",
+                      "|Diff| < $10", "|Diff| < $50", "|Diff| < $100", "|Diff| < $200", "|Diff| < $300")) %>%
+  column_spec(column = 2:10, width = "3em")
 ```
 
 
-```{r}
+```{r perc_split_df}
 # Figured out I have to unlist() count, but not enough time or energy to go back and clean up split_df.
 perc_split_df <- data.frame("price_group" = split_df$price_group,
-                            percdiff_1 <- c(preds_price %>% filter(price < 5000 & percent_diff < 1) %>%
+                            percerr_1 <- c(preds_price %>% filter(price < 5000 & percent_err < 1) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_diff < 1 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & percent_err < 1 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_diff < 1) %>%
+                                            preds_price %>% filter(price >= 10000 & percent_err < 1) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percdiff_5 <- c(preds_price %>% filter(price < 5000 & percent_diff < 5) %>%
+                            percerr_5 <- c(preds_price %>% filter(price < 5000 & percent_err < 5) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_diff < 5 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & percent_err < 5 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_diff < 5) %>%
+                                            preds_price %>% filter(price >= 10000 & percent_err < 5) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percdiff_10 <- c(preds_price %>% filter(price < 5000 & percent_diff < 10) %>%
+                            percerr_10 <- c(preds_price %>% filter(price < 5000 & percent_err < 10) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_diff < 10 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & percent_err < 10 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_diff < 10) %>%
+                                            preds_price %>% filter(price >= 10000 & percent_err < 10) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percdiff_15 <- c(preds_price %>% filter(price < 5000 & percent_diff < 15) %>%
+                            percerr_15 <- c(preds_price %>% filter(price < 5000 & percent_err < 15) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_diff < 15 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & percent_err < 15 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_diff < 15) %>%
+                                            preds_price %>% filter(price >= 10000 & percent_err < 15) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percdiff_20 <- c(preds_price %>% filter(price < 5000 & percent_diff < 20) %>%
+                            percerr_20 <- c(preds_price %>% filter(price < 5000 & percent_err < 20) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 5000 & percent_diff < 20 & price < 10000) %>%
+                                            preds_price %>% filter(price >= 5000 & percent_err < 20 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
-                                            preds_price %>% filter(price >= 10000 & percent_diff < 20) %>%
+                                            preds_price %>% filter(price >= 10000 & percent_err < 20) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist())
-colnames(perc_split_df) <- c("price_group", "percdiff_1", "percdiff_5", "percdiff_10", "percdiff_15", "percdiff_20")
+colnames(perc_split_df) <- c("price_group", "percerr_1", "percerr_5", "percerr_10", "percerr_15", "percerr_20")
 ```
 
+```{r perc split table}
+perc_split_df %>%
+  mutate(across(2:6, ~round(.x*100, 1))) %>%
+  mutate(across(2:6, ~paste0(as.character(.x), "%"))) %>%
+  kable(format = "latex", align = "c",
+        col.names = c("Price Group", "%error < 1%", "%error < 5%", "%error < 10%", "%error < 20%"))
+```
 
 
 
