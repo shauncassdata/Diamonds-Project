@@ -637,7 +637,7 @@ rf_fit_tune_fine %>%
 
 # Results
 
-The final RMSE using the test set was 0.0867 log US Dollars which means the model made better predictions for the diamonds then the cross-validation approach originally assumed it would. To fully understand how well the model predicted the price of the diamonds in the data set, the predictions were transformed back into US dollars and rounded to the nearest dollar to match the format of the original price of the diamonds. As seen in figure ?, the model performed better for lower priced diamonds, but fared worse as the price of the diamond increased. There also appeared to be a few lower priced diamonds where the model did not perform as well as it did for similarly price diamonds.
+The final RMSE using the test set was 0.0867 log US Dollars which means the model made better predictions for the diamonds then the cross-validation approach originally assumed it would. To fully understand how well the model predicted the price of the diamonds in the data set, the predictions were transformed back into US dollars and rounded to the nearest dollar to match the format of the original price of the diamonds. As seen in figure ?, the model performed better for lower priced diamonds, but fared worse as the price of the diamond increased. There also appeared to be a few lower priced diamonds where the model did not perform as well as it did for similarly priced diamonds.
 
 
 ```{r preds vs obs}
@@ -662,7 +662,7 @@ preds_price %>%
   theme_bw()
 ```
 
-To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with a corresponding standard deviation of \$4, a sample median of \$93, and a sample 75th quantile of \$286. This further cemented the notion that a relatively small proportion of the predictions fared much worse than others. 
+To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with a corresponding standard deviation of \$4, a sample median of \$93, and a sample 75th percentile (the point at which 75% of the data is at or smaller than this value) of \$286. This further cemented the notion that a particular subset of the predictions fared much worse than others. 
 
 ```{r dist of abs diff}
 preds_price <- preds_price %>% mutate(absdiff = abs(.pred - price))
@@ -678,11 +678,14 @@ preds_price %>%
   theme_minimal() +
   ggtitle("Distribution of the Absolute Difference\nBetween the Predicted and Observed Prices")
 ```
-In total, there were only 6 predictions that exactly matched the price of the observed diamond. 
+In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference 
 
 
 ```{r}
-preds_price %>% mutate(percent_diff = ((.pred - price)/price)*100) %>%
+preds_price <- preds_price %>%
+  mutate(percent_diff = ((.pred - price)/price)*100)
+
+preds_price %>%
   ggplot(aes(x = percent_diff)) +
   geom_density(fill = "olivedrab3", alpha = 0.8) +
   theme_minimal() +
@@ -693,6 +696,8 @@ preds_price %>% mutate(percent_diff = ((.pred - price)/price)*100) %>%
                arrow = arrow(length = unit(0.5, "cm")), color = "blue") +
   annotate("text", x = -30, y = 0.025, label = "Model predicted the price\nto be lower than it was") +
   annotate("text", x = 30, y = 0.025, label = "Model predicted the price\nto be higher than it was") +
+  geom_vline(aes(xintercept = quantile(percent_diff, 0.25), color = "25th Percentile"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(percent_diff, 0.75), color = "75th Percentile"), linetype = "twodash") +
   xlab("Percent Difference") +
   ylab("Density") +
   ggtitle("Distribution of the Percent Difference\nBetween the Predicted and Observed Prices")
@@ -725,54 +730,89 @@ split_df <- data.frame("price_group" = ordered(c("price < $5000", "$5000 <= pric
                        RMSE = c(preds_price %>% filter(price < 5000) %>%
                                   summarise(rmse = sqrt((1/n())*sum((.pred - price)^2))) %>% unlist() %>%
                                   round(0),
-                                preds_price %>% filter(price > 5000 & price < 10000) %>%
+                                preds_price %>% filter(price >= 5000 & price < 10000) %>%
                                   summarise(rmse = sqrt((1/n())*sum((.pred - price)^2))) %>% unlist() %>%
                                   round(0),
-                                preds_price %>% filter(price > 10000) %>%
+                                preds_price %>% filter(price >= 10000) %>%
                                   summarise(rmse = sqrt((1/n())*sum((.pred - price)^2)))  %>% unlist() %>%
                                   round(0)),
                        absdiff_10 = c(preds_price %>% filter(price < 5000) %>% mutate(tf10 = absdiff < 10) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 5000)),
                                       preds_price %>% filter(price >= 5000 & price < 10000) %>% mutate(tf10 = absdiff < 10) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)),
-                                      preds_price %>% filter(price > 10000) %>% mutate(tf10 = absdiff < 10) %>%
-                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 10000))),
+                                      preds_price %>% filter(price >= 10000) %>% mutate(tf10 = absdiff < 10) %>%
+                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 10000))),
                        absdiff_50 = c(preds_price %>% filter(price < 5000) %>% mutate(tf10 = absdiff < 50) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 5000)),
                                       preds_price %>% filter(price >= 5000 & price < 10000) %>% mutate(tf10 = absdiff < 50) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)),
-                                      preds_price %>% filter(price > 10000) %>% mutate(tf10 = absdiff < 50) %>%
-                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 10000))),
+                                      preds_price %>% filter(price >= 10000) %>% mutate(tf10 = absdiff < 50) %>%
+                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 10000))),
                        absdiff_100 = c(preds_price %>% filter(price < 5000) %>% mutate(tf10 = absdiff < 100) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 5000)),
                                       preds_price %>% filter(price >= 5000 & price < 10000) %>% mutate(tf10 = absdiff < 100) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)),
-                                      preds_price %>% filter(price > 10000) %>% mutate(tf10 = absdiff < 100) %>%
-                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 10000))),
+                                      preds_price %>% filter(price >= 10000) %>% mutate(tf10 = absdiff < 100) %>%
+                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 10000))),
                        absdiff_200 = c(preds_price %>% filter(price < 5000) %>% mutate(tf10 = absdiff < 200) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 5000)),
                                       preds_price %>% filter(price >= 5000 & price < 10000) %>% mutate(tf10 = absdiff < 200) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)),
-                                      preds_price %>% filter(price > 10000) %>% mutate(tf10 = absdiff < 200) %>%
-                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 10000))),
+                                      preds_price %>% filter(price >= 10000) %>% mutate(tf10 = absdiff < 200) %>%
+                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 10000))),
                        absdiff_300 = c(preds_price %>% filter(price < 5000) %>% mutate(tf10 = absdiff < 300) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 5000)),
                                       preds_price %>% filter(price >= 5000 & price < 10000) %>% mutate(tf10 = absdiff < 300) %>%
                                         pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)),
-                                      preds_price %>% filter(price > 10000) %>% mutate(tf10 = absdiff < 300) %>%
-                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price < 10000))))
-
+                                      preds_price %>% filter(price >= 10000) %>% mutate(tf10 = absdiff < 300) %>%
+                                        pull(tf10) %>% sum()/nrow(preds_price %>% filter(price >= 10000))))
 ```
 
 
 ```{r}
 split_df %>%
-  mutate(across(2:9, ~round(.x*100, 1))) %>%
-  mutate(across(2:9, ~paste0(as.character(.x), "%"))) %>%
+  mutate(across(c(2:4,6:10), ~round(.x*100, 1))) %>%
+  mutate(across(c(2:4,6:10), ~paste0(as.character(.x), "\\%"))) %>%
+  mutate(across(c(5), ~paste0("\\$", as.character(.x)))) %>%
   kable(format = "latex", align = "c")
 ```
 
 
+```{r}
+# Figured out I have to unlist() count, but not enough time or energy to go back and clean up split_df.
+perc_split_df <- data.frame("price_group" = split_df$price_group,
+                            percdiff_1 <- c(preds_price %>% filter(price < 5000 & percent_diff < 1) %>%
+                                              count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 5000 & percent_diff < 1 & price < 10000) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 10000 & percent_diff < 1) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
+                            percdiff_5 <- c(preds_price %>% filter(price < 5000 & percent_diff < 5) %>%
+                                              count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 5000 & percent_diff < 5 & price < 10000) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 10000 & percent_diff < 5) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
+                            percdiff_10 <- c(preds_price %>% filter(price < 5000 & percent_diff < 10) %>%
+                                              count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 5000 & percent_diff < 10 & price < 10000) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 10000 & percent_diff < 10) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
+                            percdiff_15 <- c(preds_price %>% filter(price < 5000 & percent_diff < 15) %>%
+                                              count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 5000 & percent_diff < 15 & price < 10000) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 10000 & percent_diff < 15) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
+                            percdiff_20 <- c(preds_price %>% filter(price < 5000 & percent_diff < 20) %>%
+                                              count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 5000 & percent_diff < 20 & price < 10000) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
+                                            preds_price %>% filter(price >= 10000 & percent_diff < 20) %>%
+                                              count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist())
+colnames(perc_split_df) <- c("price_group", "percdiff_1", "percdiff_5", "percdiff_10", "percdiff_15", "percdiff_20")
+```
 
 
 
