@@ -597,7 +597,7 @@ A tree is a relatively simple model and is easily interpretable. As seen in figu
 knitr::include_graphics(path = "Figures/sample_tree_plot.pdf")
 ```
 
-A random forest is an ensemble of hundreds or even thousands of these trees. To build each tree, a boostrap sample (a sample with replacement) the same size of the training data is taken from the training data. The tree is then recursively grown the normal way a regression tree is grown except that each terminal node is split only considering $m$ variables out of the total number of variables. The best variable/split point is picked among the $m$ and the tree is recursively grown until the minimum node size min_n is reached. Final predictions are made by averaging all of the trees (ESLII 607).
+A random forest is an ensemble of hundreds or even thousands of these trees. To build each tree, a boostrap sample (a sample with replacement) the same size of the training data is taken from the training data. The tree is then recursively grown the normal way a regression tree is grown except that each terminal node is split only considering $m$ variables out of the total number of variables. The best variable/split point is picked among the $m$ and the tree is recursively grown until the minimum node size min_n is reached. Final predictions are made by averaging all of the trees (ESLII 607). A random forest has the same bias as an individual sampled tree and improvements in prediction are due solely to a reduction in variance (ESLII 619 - 620).
 
 
 ```{r initial rf mtry min_n}
@@ -662,7 +662,7 @@ preds_price %>%
   theme_bw()
 ```
 
-To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with a corresponding standard deviation of \$4, a sample median of \$93, and a sample 75th percentile (the point at which 75% of the data is at or smaller than this value) of \$286. This further cemented the notion that a particular subset of the predictions fared much worse than others. 
+To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with an estimated standard deviation of \$4, a sample median of \$93, and a sample 75th percentile (the point at which 75% of the data is at or smaller than this value) of \$286. This further cemented the notion that a particular subset of the predictions fared much worse than others. 
 
 ```{r dist of abs diff}
 preds_price %>%
@@ -678,7 +678,7 @@ preds_price %>%
 ```
 In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference provided insight into how close each prediction was to the original price point, practically speaking an absolute difference of \$100 is worse for a \$400 diamond than a \$8000 diamond. The percent error between the observed and predicted diamond prices can be calculated as:
 $$\%error=\frac{Price_{predicted} - Price_{observed}}{Price_{observed}}$$
-It was thought that this calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, this calculation 
+It was thought that this calculation may be more useful for both buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, the distribution of this calculation proved useful in determining if the model typically undervalued the diamonds or overvalued the diamonds (figure ?). For this distribution, the sample standard deviation was 8.73%, the sample 10th percentile was -9.06%, the median was -0.39%, the mean was 0.27% with an estimated standard deviation of 0.09%, and the sample 90th percentile was 10.30%. Overall, it appeared that the model tended to slightly undervalue the diamonds. 
 
 ```{r perc diff dist, out.width='125%'}
 preds_price <- preds_price %>%
@@ -783,37 +783,37 @@ split_df %>%
 ```{r perc_split_df}
 # Figured out I have to unlist() count, but not enough time or energy to go back and clean up split_df.
 perc_split_df <- data.frame("price_group" = split_df$price_group,
-                            percerr_1 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 1) %>%
+                            abspercerr_1 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 1) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
                                             preds_price %>% filter(price >= 5000 & abs(percent_err) < 1 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
                                             preds_price %>% filter(price >= 10000 & abs(percent_err) < 1) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_5 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 5) %>%
+                            abspercerr_5 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 5) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
                                             preds_price %>% filter(price >= 5000 & abs(percent_err) < 5 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
                                             preds_price %>% filter(price >= 10000 & abs(percent_err) < 5) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_10 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 10) %>%
+                            abspercerr_10 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 10) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
                                             preds_price %>% filter(price >= 5000 & abs(percent_err) < 10 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
                                             preds_price %>% filter(price >= 10000 & abs(percent_err) < 10) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_15 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 15) %>%
+                            abspercerr_15 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 15) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
                                             preds_price %>% filter(price >= 5000 & abs(percent_err) < 15 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
                                             preds_price %>% filter(price >= 10000 & abs(percent_err) < 15) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist(),
-                            percerr_20 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 20) %>%
+                            abspercerr_20 <- c(preds_price %>% filter(price < 5000 & abs(percent_err) < 20) %>%
                                               count()/nrow(preds_price %>% filter(price < 5000)) %>% unlist(),
                                             preds_price %>% filter(price >= 5000 & abs(percent_err) < 20 & price < 10000) %>%
                                               count()/nrow(preds_price %>% filter(price >= 5000 & price < 10000)) %>% unlist(),
                                             preds_price %>% filter(price >= 10000 & abs(percent_err) < 20) %>%
                                               count()/nrow(preds_price %>% filter(price >= 10000)) %>% unlist()) %>% unlist())
-colnames(perc_split_df) <- c("price_group", "percerr_1", "percerr_5", "percerr_10", "percerr_15", "percerr_20")
+colnames(perc_split_df) <- c("price_group", "abspercerr_1", "abspercerr_5", "abspercerr_10", "abspercerr_15", "abspercerr_20")
 ```
 
 ```{r perc split table}
