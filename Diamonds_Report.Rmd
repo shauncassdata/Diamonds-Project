@@ -841,7 +841,35 @@ All the predictors were kept in the random forest model in case there was any co
 
 # References
 
-## Software
++ “About GIA Facetware®.” Accessed March 20, 2021. https://www.gia.edu/facetware-about.
+
+
++ “AGS Diamond Charts | Find Diamond Rating, Scales, & Grading Charts.” American Gem Society. Accessed May 2, 2021. https://www.americangemsociety.org/buying-diamonds-with-confidence/ags-diamond-grading-system/.
+
+
++ “Diamond Anatomy, Explained.” GIA 4Cs, April 9, 2014. https://4cs.gia.edu/en-us/blog/diamond-anatomy-explained/.
+
+
++ “Diamond Inclusions Defined.” GIA 4Cs, November 25, 2013. https://4cs.gia.edu/en-us/blog/diamond-inclusions-defined/.
+
+
++ Hastie, Trevor, Robert Tibshirani, and J. H. Friedman. The Elements of Statistical Learning: Data Mining, Inference, and Prediction. 2nd ed. Springer Series in Statistics. New York, NY: Springer, 2009.
+
+
++ “History of the 4Cs of Diamond Quality.” GIA 4Cs, October 17, 2017. https://4cs.gia.edu/en-us/blog/history-4cs-diamond-quality/.
+
+
++ “How Diamonds Shape Up.” GIA 4Cs, June 19, 2012. https://4cs.gia.edu/en-us/blog/how-diamonds-shape-up/.
+
+
++ Kuhn, Max, and Kjell Johnson. Feature Engineering and Selection: A Practical Approach for Predictive Models, 2020.
+
+
++ Pisani, Bob. “The Billion Dollar Business of Diamonds, From Mining to Retail.” CNBC, August 27, 2012. https://www.cnbc.com/2012/08/27/the-billion-dollar-business-of-diamonds-from-mining-to-retail.html.
+
+
+
+# Software
 
 + Barret Schloerke, Di Cook, Joseph Larmarange, Francois Briatte, Moritz Marbach, Edwin Thoen, Amos Elberg and Jason Crowley (2021). *GGally: Extension to 'ggplot2'.* R package version 2.1.1. https://CRAN.R-project.org/package=GGally
 
@@ -863,6 +891,9 @@ https://CRAN.R-project.org/package=doParallel
 
 
 + R Core Team (2021). *R: A language and environment for statistical computing.* R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+
++ RStudio Team (2020). *RStudio: Integrated Development for R.* RStudio, PBC, Boston, MA URL http://www.rstudio.com/.
 
 
 + Stephen Milborrow (2020). *rpart.plot: Plot 'rpart' Models: An Enhanced Version of 'plot.rpart'.* R package version 3.0.9. https://CRAN.R-project.org/package=rpart.plot
