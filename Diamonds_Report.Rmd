@@ -49,7 +49,11 @@ load("Data/preds_price.Rda")
 
 # Introduction
 
-For centuries diamonds have been sought after as symbols of wealth and prosperity. They have been adorned on the crowns of royals and in the past century used as a symbol of a couple's eternal love. In the eyes of the public they are a valuable commodity with the worldwide retail market for diamond jewelry having an estimated worth of $60 billion dollars in 2010 (cnbc). Round cut diamonds (also called round brilliant diamonds) are the most popular shape of diamond and are often used in jewelery such as engagement rings. This style of diamond has been around since the 1700s and the techniques used to make this style of diamond have been modified over the years to produce more brilliant and outstanding diamonds (GIA).
+For centuries diamonds have been sought after as symbols of wealth and prosperity. They have been adorned on the crowns of royals and in the past century used as a symbol of a couple's eternal love. In the eyes of the public they are a valuable commodity with the worldwide retail market for diamond jewelry having an estimated worth of $60 billion dollars in 2010 (Pisani 2012). Round cut diamonds (also called round brilliant diamonds) are the most popular shape of diamond and are often used in jewelery such as engagement rings. This style of diamond has been around since the 1700s and the techniques used to make this style of diamond have been modified over the years to produce more brilliant and outstanding diamonds (*GIA 4Cs* 2012).
+
+These precious stones are bought and sold by a variety of individuals. There are diamond cutters, jewelry manufacturers, and even just regular people for which there exsists a need to understand a round cut diamond's worth. There are websites that one can use that allow them to find the minimum, average, and maximum price of a round cut diamond based on a few basic characteristics (The Diamond Pro 2021). However, many may still need to know if it is possible to more accurately predict the price of a round cut diamond. 
+
+This report aims to showcase a method that predicts round cut diamonds with a certain degree of acceptable error based on just a relatively small amount of basic round cut diamond features. The features used in this report are the same sort of features included in a diamond grading report from respected organizations like the Gemological Institute of America (“Sample Natural Diamond Reports.” 2021). It is the hope of the author that the model built for this report will aid both professionals and regular individuals in predicting the price of common round cut diamonds whose true value ranges from the low hundreds of dollars to a little less than $19,000. 
 
 
 # Methods
@@ -844,30 +848,33 @@ All the predictors were kept in the random forest model in case there was any co
 + “About GIA Facetware®.” Accessed March 20, 2021. https://www.gia.edu/facetware-about.
 
 
-+ “AGS Diamond Charts | Find Diamond Rating, Scales, & Grading Charts.” American Gem Society. Accessed May 2, 2021. https://www.americangemsociety.org/buying-diamonds-with-confidence/ags-diamond-grading-system/.
++ “AGS Diamond Charts | Find Diamond Rating, Scales, & Grading Charts.” *American Gem Society.* Accessed May 2, 2021. https://www.americangemsociety.org/buying-diamonds-with-confidence/ags-diamond-grading-system/.
+
++ Blodgett, T, Geurts, R, Gilbertson, A, Lucas, A, Pay, D, Reinitz, I, Shigley, J, Yantzer, K, Zink, C. *Estimating a Cut Grade Diamond Using the GIA Diamond Cut Grading System.* Gemelogical Institute of America. 2009.
+
++ “Diamond Anatomy, Explained.” *GIA 4Cs,* April 9, 2014. https://4cs.gia.edu/en-us/blog/diamond-anatomy-explained/.
 
 
-+ “Diamond Anatomy, Explained.” GIA 4Cs, April 9, 2014. https://4cs.gia.edu/en-us/blog/diamond-anatomy-explained/.
++ “Diamond Inclusions Defined.” *GIA 4Cs,* November 25, 2013. https://4cs.gia.edu/en-us/blog/diamond-inclusions-defined/.
 
 
-+ “Diamond Inclusions Defined.” GIA 4Cs, November 25, 2013. https://4cs.gia.edu/en-us/blog/diamond-inclusions-defined/.
++ Hastie, Trevor, Robert Tibshirani, and J. H. Friedman. *The Elements of Statistical Learning: Data Mining, Inference, and Prediction.* 2nd ed. Springer Series in Statistics. New York, NY: Springer, 2009.
 
 
-+ Hastie, Trevor, Robert Tibshirani, and J. H. Friedman. The Elements of Statistical Learning: Data Mining, Inference, and Prediction. 2nd ed. Springer Series in Statistics. New York, NY: Springer, 2009.
++ “History of the 4Cs of Diamond Quality.” *GIA 4Cs,* October 17, 2017. https://4cs.gia.edu/en-us/blog/history-4cs-diamond-quality/.
 
 
-+ “History of the 4Cs of Diamond Quality.” GIA 4Cs, October 17, 2017. https://4cs.gia.edu/en-us/blog/history-4cs-diamond-quality/.
++ “How Diamonds Shape Up.” *GIA 4Cs,* June 19, 2012. https://4cs.gia.edu/en-us/blog/how-diamonds-shape-up/.
 
 
-+ “How Diamonds Shape Up.” GIA 4Cs, June 19, 2012. https://4cs.gia.edu/en-us/blog/how-diamonds-shape-up/.
++ Kuhn, Max, and Kjell Johnson. *Feature Engineering and Selection: A Practical Approach for Predictive Models,* 2020.
+
++ “Learn to Calculate Diamond Prices So You Don’t Get Ripped Off.” *The Diamond Pro.* Accessed May 1, 2021. https://www.diamonds.pro/education/diamond-prices/.
 
 
-+ Kuhn, Max, and Kjell Johnson. Feature Engineering and Selection: A Practical Approach for Predictive Models, 2020.
++ Pisani, Bob. “The Billion Dollar Business of Diamonds, From Mining to Retail.” *CNBC,* August 27, 2012. https://www.cnbc.com/2012/08/27/the-billion-dollar-business-of-diamonds-from-mining-to-retail.html.
 
-
-+ Pisani, Bob. “The Billion Dollar Business of Diamonds, From Mining to Retail.” CNBC, August 27, 2012. https://www.cnbc.com/2012/08/27/the-billion-dollar-business-of-diamonds-from-mining-to-retail.html.
-
-
++ “Sample Natural Diamond Reports.” Accessed May 1, 2021. https://www.gia.edu/analysis-grading-sample-report-diamond?reporttype=diamond-grading-report&reporttype=diamond-grading-report.
 
 # Software
 
@@ -879,6 +886,8 @@ All the predictors were kept in the random forest model in case there was any co
 
 + Hao Zhu (2021). *kableExtra: Construct Complex Table with 'kable' and Pipe Syntax.* R package version 1.3.4. https://CRAN.R-project.org/package=kableExtra
 
+
++ H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
 
 + Jeroen Ooms (2021). *magick: Advanced Graphics and Image-Processing in R.* R package version 2.7.1. https://CRAN.R-project.org/package=magick
 
