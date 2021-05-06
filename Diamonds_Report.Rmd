@@ -49,7 +49,8 @@ load("Data/preds_price.Rda")
 
 # Introduction
 
-Round cut diamonds (also called round brilliant) are the most popular shape of diamond and are often used in jewelery such as engagement rings. The 
+For centuries diamonds have been sought after as symbols of wealth and prosperity. They have been adorned on the crowns of royals and in the past century used as a symbol of a couple's eternal love. In the eyes of the public they are a valuable commodity with the worldwide retail market for diamond jewelry having an estimated worth of $60 billion dollars in 2010 (cnbc). Round cut diamonds (also called round brilliant diamonds) are the most popular shape of diamond and are often used in jewelery such as engagement rings. This style of diamond has been around since the 1700s and the techniques used to make this style of diamond have been modified over the years to produce more brilliant and outstanding diamonds (GIA).
+
 
 # Methods
 
@@ -152,14 +153,13 @@ zhigh_idsdiamonds %>%
 
 To find additional discrepancies in the data, the total depth percentage was calculated for all other observations using the formula in table 1. There were obvious differences between the calculated and recorded total depth percentages as seen in figure 2. It was found that there were 120 observations with a 1% difference or more between the recorded and calculated total depth percentage. Going further, there were 18 observations with a 10% difference or more between the recorded and calculated total depth percentage. The x and y features of these 18 observations noticeably similar with x ranging from 0.75 t0 1.62 times the size of y. The z values were again suspected to be the reason for the noticeable difference between the recorded and calculated total depth percentages for these 18 observations. The z values were thus replaced using the same formula as before. To avoid possibly biasing the data, any remaining observations that had a difference between the recorded and calculated total depth percentage were left as is. 
 
-```{r recorded vs calculated depth, echo=FALSE}
+```{r recorded vs calculated depth, echo=FALSE, fig.cap="Comparison of the recorded and calculated total depth percentage."}
 rec_calc_total_depth %>%
   drop_na() %>%
   ggally_points(aes(x = temp_depth, y = depth)) +
   geom_abline(aes(slope = 1, intercept = 0, color = "red"), linetype = "dashed") +
   xlab("Calculated Total Depth Percentage") +
   ylab("Recorded Total Depth Percentage") +
-  ggtitle("Recorded vs. Calculated Total Depth Percentage") +
   scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = "1:1") +
   scale_x_continuous(labels = scales::label_percent(accuracy = 1, scale = 1)) +
   scale_y_continuous(labels = scales::label_percent(accuracy = 1, scale = 1))+
@@ -176,7 +176,6 @@ The response variable for the Diamonds data set was decided to be the price in U
 a <- diamonds %>%
   ggplot(aes(x = price)) +
   geom_density(size = 1.05, fill = "steelblue", alpha = 0.8) +
-  ggtitle("Distribution of the Diamonds' Price") +
   xlab("Price (US Dollars)") +
   ylab("Density") +
   geom_vline(aes(xintercept = mean(price), color = "Mean"), linetype = "dashed") +
@@ -188,7 +187,6 @@ a <- diamonds %>%
 b <- diamonds %>%
   ggplot(aes(x = log(price)))  +
   geom_density(size = 1.05, fill = "steelblue", alpha = 0.8) +
-  ggtitle("Distribution of the Diamonds' Price", subtitle = "Price is natural log transformed") +
   xlab("Price (log US Dollars)") +
   ylab("Density") +
   geom_vline(aes(xintercept = mean(log(price)), color = "Mean"), linetype = "dashed") +
@@ -199,7 +197,7 @@ b <- diamonds %>%
 
 c <- a / b & theme(legend.position = "right")
 c + plot_layout(guides = "collect") +
-  plot_annotation(caption = "Figure 3: Distribution of price and its natural log transformation.",
+  plot_annotation(caption = "Figure 7.1: Distribution of price and its natural log transformation.",
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
@@ -212,13 +210,11 @@ d <- diamonds %>%
   geom_density(size = 1.05, fill = "red3", alpha = 0.8) +
   xlab("Weight (Carat)") +
   ylab("Density") +
-  ggtitle("Distribution of the Diamonds' Weight (Carat)") +
   theme_minimal()
 
 e <- diamonds %>%
   ggplot(aes(x = depth)) +
   geom_density(size = 1.05, fill = "violet", alpha = 0.8) +
-  ggtitle("Distribution of the Diamonds' Total Depth Percentage") +
   xlab("Total Depth (%)") +
   ylab("Density") +
   scale_x_continuous(labels = scales::label_percent(scale = 1)) +
@@ -227,13 +223,12 @@ e <- diamonds %>%
 f <- diamonds %>%
   ggplot(aes(x = table))   +
   geom_density(size = 1.05, fill = "green4", alpha = 0.8) +
-  ggtitle("Distribution of the Diamonds' Table Percentage") +
   xlab("Table (%)") +
   ylab("Density") +
   scale_x_continuous(labels = scales::label_percent(scale = 1)) +
   theme_minimal()
 
-d / e / f + plot_annotation(caption = "Figure 4: Distribution of carat, total depth percentage, and table percentage.",
+d / e / f + plot_annotation(caption = "Figure 7.2: Distribution of carat, total depth percentage, and table percentage.",
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
@@ -245,7 +240,6 @@ g <- diamonds %>%
   drop_na() %>%
   ggplot(aes(x = x)) +
   geom_density(fill = "turquoise3", alpha = 0.8, size = 1.05) +
-  ggtitle("Distribution of the Diamonds' Length") +
   xlab("x (mm)") +
   ylab("Density") +
   scale_x_continuous(limits = c(0, 11)) +
@@ -256,7 +250,6 @@ h <- diamonds %>%
   drop_na() %>%
   ggplot(aes(x = y)) +
   geom_density(fill = "deeppink3", alpha = 0.8, size = 1.05) +
-  ggtitle("Distribution of the Diamonds' Width") +
   xlab("y (mm)") +
   ylab("Density") +
   scale_x_continuous(limits = c(0, 11)) +
@@ -267,13 +260,12 @@ i <- diamonds %>%
   drop_na() %>%
   ggplot(aes(x = z)) +
   geom_density(fill = "palegreen3", alpha = 0.8, size = 1.05) +
-  ggtitle("Distribution of the Diamonds' Depth") +
   xlab("z (mm)") +
   ylab("Density") +
   scale_x_continuous(limits = c(0, 11)) +
   theme_minimal()  
 
-g / h / i + plot_annotation(caption = "Figure 4: Distribution of x, y, and z (excluding eight observations with missing values).",
+g / h / i + plot_annotation(caption = "Figure 7.3: Distribution of x, y, and z (excluding eight observations with missing values).",
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
@@ -289,7 +281,7 @@ cut <- diamonds %>%
   geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Cut") +
   ylab("Proportion") +
-  ggtitle("Proportion of Diamonds Per Cut Type", subtitle = "Sorted from worst (Fair) to best (Ideal)") +
+  labs(caption = "Sorted from worst (Fair) to best (Ideal)") +
   theme_minimal() +
   theme(axis.text.x = element_text(size = 7),
         title = element_text(size = 8))
@@ -299,7 +291,7 @@ clarity <- diamonds %>%
   geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Clarity") +
   ylab("Proportion") +
-  ggtitle("Proportion of Diamonds Per Clarity Type", subtitle = "Sorted from worst (I1) to best (IF)") +
+  labs(caption = "Sorted from worst (I1) to best (IF)") +
   theme_minimal() +
   theme(axis.text.x = element_text(size = 7),
         title = element_text(size = 8))
@@ -309,12 +301,12 @@ color <- diamonds %>%
   geom_bar(aes(y = ..prop.., group = 1)) +
   xlab("Color") +
   ylab("Proportion") +
-  ggtitle("Proportion of Diamonds Per Color Type", subtitle = "Sorted from worst (J) to best (D)") +
+  labs(caption = "Sorted from worst (J) to best (D)") +
   theme_minimal() +
   theme(axis.text.x = element_text(size = 7),
         title = element_text(size = 8)) 
 
-cut + clarity + color + plot_annotation(caption = "Figure 5: Distribution of cut, clarity, and color.",
+cut + clarity + color + plot_annotation(caption = "Figure 7.4: Distribution of cut, clarity, and color.",
                   theme = theme(plot.caption = element_text(hjust = 0.5))) +
   plot_layout(nrow = 2)
 
@@ -335,7 +327,6 @@ color_cut <- diamonds %>%
   theme_minimal() +
   xlab("Cut") +
   ylab("Color") +
-  ggtitle("Proportion of Total Data for Each Color and Cut") +
   scale_size(name = "Proportion of \nTotal Data") +
   theme(axis.text.x = element_text(size = 5.2),
         title = element_text(size = 7))
@@ -351,7 +342,6 @@ clarity_cut <- diamonds %>%
   theme_minimal() +
   xlab("Cut") +
   ylab("Clarity") +
-  ggtitle("Proportion of Total Data for Each Clarity and Cut") +
   scale_size(name = "Proportion of \nTotal Data") +
   theme(axis.text.x = element_text(size = 5.2),
         title = element_text(size = 7))
@@ -367,12 +357,11 @@ clarity_color <- diamonds %>%
   theme_minimal() +
   xlab("Color") +
   ylab("Clarity") +
-  ggtitle("Proportion of Total Data for Each Clarity and Color") +
   scale_size(name = "Proportion of \nTotal Data") +
   theme(title = element_text(size = 7))
 
 color_cut + clarity_cut  / clarity_color +
-  plot_annotation(caption = "Figure 6: Bivariate proportions for cut, color, and clarity.",
+  plot_annotation(caption = "Figure 7.5: Bivariate proportions of the total data for cut, color, and clarity.",
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 ```
 
@@ -384,7 +373,6 @@ price_cut <- diamonds %>%
   geom_boxplot() +
   xlab("Cut") +
   ylab("Price (log US Dollars)") +
-  ggtitle("Distribution of log Price for each\nCut of Diamond") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
         title = element_text(size = 7)) +
@@ -395,7 +383,6 @@ price_color <- diamonds %>%
   geom_boxplot() +
   xlab("Color") +
   ylab("Price (log US Dollars)") +
-  ggtitle("Distribution of log Price for each\nColor of Diamond") +
   theme_bw() +
   theme(axis.title.y = element_blank(),
         title = element_text(size = 7)) +
@@ -406,7 +393,6 @@ price_clarity <- diamonds %>%
   geom_boxplot() +
   xlab("Clarity") +
   ylab("Price (log US Dollars)") +
-  ggtitle("Distribution of log Price for each\nClarity of Diamond") +
   theme_bw() +
   theme(axis.title.y = element_blank(),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 7),
@@ -414,7 +400,7 @@ price_clarity <- diamonds %>%
   scale_y_continuous(labels = scales::label_dollar())
 
 price_cut + price_color + price_clarity +
-  plot_annotation(caption = "Figure 7: Distribution of log price for levels of cut, color, and clarity.",
+  plot_annotation(caption = "Figure 7.6: Distribution of log price for levels of cut, color, and clarity.",
                   theme = theme(plot.caption = element_text(hjust = 0.5)))
 
 ```
@@ -427,21 +413,20 @@ Before splitting the data, the price was natural log transformed as mentioned in
 
 Pearson correlations were computed for the numerical variables in the training data and multiple variables were found to be highly correlated (figure ?). 
 
-```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in training data."}
+```{r corrplot of train data, echo=FALSE, fig.cap="Pearson correlations of numerical variables in the training data."}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
-  ggcorr(label = TRUE) +
-  ggtitle("Pearson Correlation of Continuous Variables in Training Data")
+  ggcorr(label = TRUE)
 ```
 
 Pairwise examinations of the numerical variables in training set (figure ?) also found that there existed some nonlinear association between price and many of the numerical predictors. A natural log transformation of carat, x, y, and z corrected this association such that there was both a linear relationship between the response and these predictors, and a linear relationship between these predictors. These transformations would be necessary for any linear predictive model tested. 
 
-```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in training data.", out.width='75%', dev="jpeg"}
+```{r scatterplot of numerical vars train data, fig.cap="Bivariate relationships of numerical variables in the training data.", out.width='75%', dev="jpeg"}
 train_data %>%
   select(price, carat, depth, table, x, y, z) %>%
   drop_na() %>%
-  pairs(main = "Scatterplots of Continuous Variables in Training Data")
+  pairs()
 ```
 
 
@@ -454,7 +439,7 @@ train_data %>%
          log_y = log(y),
          log_z = log(z)) %>%
   select(price, log_carat, depth, table, log_x, log_y, log_z) %>%
-  pairs(main = "Scatterplots of the Continuous Variables in Training Data\n (carat, x, y, z natural log transformed)")
+  pairs()
 ```
 
 
@@ -509,7 +494,7 @@ $$RMSE = \sqrt{MSE}=\sqrt{\frac{1}{n}\sum_{i=1}^N(Y_i-\hat{Y}_i)^2}$$
 Here $n$ is the sample size of the fold left out for prediction, $Y_i$ is the observed price, and $\hat{Y}_i$ is the predicted price. An advantage of using the RMSE instead of just the MSE is that the prediction error is in the same units as the response. The best model as determined by the smallest mean RMSE for each glmnet and ridge regression fit is shown in figure ? along with the seven best regression tree and random forest models. It was apparent that the linear models fared consistently worse than many of the tree models and the random forest models fared much better than any of the other models tested. It was decided that a random forest model would provide the best predictions for the diamonds data set.
 
 
-```{r seven best models graph}
+```{r seven best models graph, fig.cap="Comparison of the seven best linear and tree based models found using 10-fold CV. The best model was chosen for each linear fit and compared to the seven best regression trees and random forests."}
 the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
                                "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
                                "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
@@ -562,8 +547,7 @@ the_best %>%
   geom_errorbar(aes(ymin = Mean - std_err, ymax = Mean + std_err),
                 position = "dodge", color = "black") +
   ylab("Mean RMSE") +
-  ggtitle("Seven Best Models Selected For Each Model Type Using 10-Fold CV",
-          subtitle = "Error bars are +/- 1 standard error.") +
+  labs(caption = "Error bars are +/- 1 standard error.") +
   theme_classic()  +
   scale_fill_brewer(type = "seq", palette = "Paired") +
   facet_grid(~ model_type, scales = "free") +
@@ -593,14 +577,14 @@ $$\hat{c}_1=ave(y_i|x_i\in R_1(j,s))$$  $$\hat{c}_2=ave(y_i|x_i\in R_2(j,s))$$
 
 A tree is a relatively simple model and is easily interpretable. As seen in figure ?, the tree starts at the root node at the top and binary splits subject to a condition are made on various predictors. If the condition is true then observations follow the split to the left while the other observations follow the split to the right. The terminal nodes at the bottom of the tree are the resulting predictions of the response for any observations that end up in these final regions.
 
-```{r sample tree plot, fig.cap="Simple regression tree of 100 random samples from the training data."}
+```{r sample tree plot, fig.cap="Simple regression tree of N = 100 random samples from the training data."}
 knitr::include_graphics(path = "Figures/sample_tree_plot.pdf")
 ```
 
 A random forest is an ensemble of hundreds or even thousands of these trees. To build each tree, a boostrap sample (a sample with replacement) the same size of the training data is taken from the training data. The tree is then recursively grown the normal way a regression tree is grown except that each terminal node is split only considering $m$ variables out of the total number of variables. The best variable/split point is picked among the $m$ and the tree is recursively grown until the minimum node size min_n is reached. Final predictions are made by averaging all of the trees (ESLII 607). A random forest has the same bias as an individual sampled tree and improvements in prediction are due solely to a reduction in variance (ESLII 619 - 620).
 
 
-```{r initial rf mtry min_n}
+```{r initial rf mtry min_n, fig.cap="Evaluation of the random forest models built using various values of mtry and min_n."}
 rf_fit_tune %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
@@ -612,12 +596,14 @@ rf_fit_tune %>%
   scale_color_viridis_c() +
   scale_x_continuous(breaks = 1:9) +
   ylab("Mean RMSE") +
-  ggtitle("10-fold Cross Validation Mean RMSE Estimates\nfor RF Tuning Parameters mtry and min_n",
-          subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.") 
+  labs(caption = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.") 
 ```
 
+
 It was apparent for the initial random forest models tested using cross-validation that higher values of $m$ (mtry) and lower values of min_n produced better predictions for the diamonds (figure ?). A finer grid of values for these parameters was tested again on the same cross-validation folds (figure ?) and the final random forest model was chosen with an mtry = 6 and a min_n = 5. This model had a cross-validation mean RMSE of 0.0885 with a standard error of 0.000526. A separate, final measure of the estimated test error was computed after training this random forest model on the entire training set using the out-of-bag (OOB) samples. The OOB predictions are the predictions made on observations using only the regression trees grown that did not contain the observation in the bootstrap sample. The OOB error estimate is almost identitical to an N-fold cross-validation and in this case was exactly identitical with the OOB estimate of the RMSE equal to 0.0885. This trained model was then used to make predictions on the diamonds in the test data set.
-```{r fine tune rf mtry min_n}
+
+
+```{r fine tune rf mtry min_n, fig.cap="Evaluation of the tuning parameters for the random forest model focusing on higher values of mtry and lower values of min_n."}
 rf_fit_tune_fine %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
@@ -630,17 +616,18 @@ rf_fit_tune_fine %>%
   scale_color_viridis_d() +
   scale_x_continuous(breaks = 5:9) +
   ylab("Mean RMSE") +
-  ggtitle("10-fold Cross Validation Mean RMSE Estimates/nfor RF Tuning Parameters mtry and min_n",
-          subtitle = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.")
+  labs(caption = "Error bars represent +/- 1 standard error. Points are dodged to avoid overlapping.")
 ```
 
 
 # Results
 
+## Accuracy of the Model
+
 The final RMSE using the test set was 0.0867 log US Dollars which means the model made better predictions for the diamonds then the cross-validation approach originally assumed it would. To fully understand how well the model predicted the price of the diamonds in the data set, the predictions were transformed back into US dollars and rounded to the nearest dollar to match the format of the original price of the diamonds. As seen in figure ?, the model performed better for lower priced diamonds, but fared worse as the price of the diamond increased. There also appeared to be a few lower priced diamonds where the model did not perform as well as it did for similarly priced diamonds.
 
 
-```{r preds vs obs}
+```{r preds vs obs, fig.cap="Predicted vs observed prices in the original units (US dollars). Observations in the test set that contained missing values are noted."}
 preds_price <- preds_price %>%
   mutate(.pred = round(.pred, 0)) %>%
   mutate(absdiff = round(abs(.pred - price), 0))
@@ -656,7 +643,6 @@ a <- test_data[!complete.cases(test_data),] %>% pull(id)
   geom_abline(aes(intercept = 0, slope = 1, color = "red"), linetype = "dashed") +
   ylab("Predicted Price (US Dollars)") +
   xlab("Observed Price (US Dollars)") +
-  ggtitle("Predicted Price vs. Observed Price") +
   scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = c("1:1")) +
   scale_fill_manual(name = NULL, values = c("Contained NA" = "cyan"), labels = "Contained NAs") +
   scale_x_continuous(labels = scales::label_dollar()) +
@@ -666,9 +652,11 @@ a <- test_data[!complete.cases(test_data),] %>% pull(id)
   theme_bw()
 ```
 
+
 To further understand how well the model predicted the price of the diamonds, the distribution of the absolute difference between the predicted and observed prices was examined (figure ?). It was found that this distribution had, rounded to the nearest dollar, a sample standard deviation of \$445, a sample mean of $257 with an estimated standard deviation of \$4, a sample median of \$93, and a sample 75th percentile (the point at which 75% of the data is at or smaller than this value) of \$286. This further cemented the notion that a particular subset of the predictions fared much worse than others. 
 
-```{r dist of abs diff}
+
+```{r dist of abs diff, fig.cap="Distribution of the absolute difference between the predicted and observed prices."}
 preds_price %>%
   ggplot(aes(absdiff)) +
   geom_density( fill = "mediumslateblue", alpha = 0.8) +
@@ -677,14 +665,16 @@ preds_price %>%
   ylab("Density") +
   xlab("Absolute Difference Between Predicted and Observed Prices") +
   scale_x_continuous(labels = scales::label_dollar()) +
-  theme_minimal() +
-  ggtitle("Distribution of the Absolute Difference\nBetween the Predicted and Observed Prices")
+  theme_minimal()
 ```
+
+
+
 In total, there were only 6 predictions that exactly matched the price of the observed diamond. Although the absolute difference provided insight into how close each prediction was to the original price point, practically speaking an absolute difference of \$100 is worse for a \$400 diamond than a \$8000 diamond. The percent error between the observed and predicted diamond prices can be calculated as:
 $$\%error=\frac{Price_{predicted} - Price_{observed}}{Price_{observed}}$$
 It was thought that this calculation may be more useful for some buyers and sellers of round cut diamonds as there may be an acceptable range for the percent error of diamonds' prices predicted using this model. Also, the distribution of this calculation proved useful in determining if the model typically undervalued the diamonds or overvalued the diamonds (figure ?). For this distribution, the sample standard deviation was 8.73%, the sample 10th percentile was -9.06%, the median was -0.39%, the mean was 0.27% with an estimated standard deviation of 0.09%, and the sample 90th percentile was 10.30%. Overall, it appeared that the model tended to slightly undervalue the diamonds. 
 
-```{r perc diff dist, out.width='125%'}
+```{r perc diff dist, out.width='125%', fig.cap="Distribution of percent error between the predicted and observed prices."}
 preds_price <- preds_price %>%
   mutate(percent_err = ((.pred - price)/price)*100)
 
@@ -697,13 +687,14 @@ preds_price %>%
                arrow = arrow(length = unit(0.5, "cm")), color = "red") +
   annotate("segment", x = 20, y = 0.02, xend = 40, yend = 0.02,
                arrow = arrow(length = unit(0.5, "cm")), color = "blue") +
-  annotate("text", x = -30, y = 0.025, label = "Model predicted the price\nto be lower than it was") +
-  annotate("text", x = 30, y = 0.025, label = "Model predicted the price\nto be higher than it was") +
+  annotate("text", x = -30, y = 0.025, label = "Model predicted the price\nto be lower than it was",
+           size = 2.5) +
+  annotate("text", x = 30, y = 0.025, label = "Model predicted the price\nto be higher than it was",
+           size = 2.5) +
   geom_vline(aes(xintercept = quantile(percent_err, 0.25), color = "25th Percentile"), linetype = "dashed") +
   geom_vline(aes(xintercept = quantile(percent_err, 0.75), color = "75th Percentile"), linetype = "twodash") +
   xlab("Percent Error") +
-  ylab("Density") +
-  ggtitle("Distribution of the Percent Error\nBetween the Predicted and Observed Prices")
+  ylab("Density")
 ```
 
 As the original data set, the training set, and the test set mostly contained lower priced diamonds and lower to medium priced round cut diamonds may be more routinely bought and sold for the use of everyday jewelry, it was thought that the accuracy of the random forest model should be examined for certain price ranges. Tables ? and ? split the original prices of the diamonds into three categories based on the price of the observed diamonds: price < \$5000, \$5000 <= price < \$10000, and price > \$10000. As expected, the predictions for the diamonds < \$5000 performed better overall compared to the other two categories when it came to the absolute difference between predicted and observed prices. When it came to the absolute percent error, the higher priced diamonds fared better, but it is important to keep in mind that this is due to the absolute percent error being scaled relative to the diamond's price e.g. $1\%*\$5000=\$500$ and $1\%*\$10000=\$1000$. 
@@ -779,8 +770,10 @@ split_df %>%
   mutate(across(c(5), ~paste0("$", as.character(.x)))) %>%
   kable(format = "latex", align = "c",
         col.names = c("Price Group", "% in Diamonds", "% in Train", "% in Test", "RMSE",
-                      "|Diff| < $10", "|Diff| < $50", "|Diff| < $100", "|Diff| < $200", "|Diff| < $300")) %>%
-  column_spec(column = 2:10, width = "3em")
+                      "|Diff| < $10", "|Diff| < $50", "|Diff| < $100", "|Diff| < $200", "|Diff| < $300"),
+        caption = "Prediction error for each price group along with the proportions in each data set and the proportion of observations whose absolute difference falls under a certain limit.") %>%
+  column_spec(column = 3:10, width = "3em") %>%
+  kable_styling(font_size = 6)
 ```
 
 
@@ -825,8 +818,14 @@ perc_split_df %>%
   mutate(across(2:6, ~round(.x*100, 1))) %>%
   mutate(across(2:6, ~paste0(as.character(.x), "%"))) %>%
   kable(format = "latex", align = "c",
-        col.names = c("Price Group", "|%error| < 1%", "|%error| < 5%", "|%error| < 10%", "|%error| < 20%"))
+        col.names = c("Price Group", "|%error| < 1%", "|%error| < 5%", "|%error| < 10%", "|%error| < 15%", "|%error| < 20%"),
+        caption = "Proportion of observations for each price group whose absolute percent error falls below a certain limit.") %>%
+  kable_styling(font_size = 6) %>%
+  column_spec(column = 2:5, width = "7em")
 ```
+
+
+## Importance of the Predictors
 
 All the predictors were kept in the random forest model in case there was any complex interactions between the variables that may lead to better predictions. However, the depth (total depth percentage) and table (table percentage) seemed unlikely to help on their own based on the previous bivariate plots between these variables and price. The importance of these variables and the other predictors in this random forest model were studied using a *permutation variable-importance measure* constructed from the OOB samples. When the $b$th tree is grown the prediction accuracy is recorded from the OOB samples. The values for the $j$th variable are then randomly permuted in the OOB samples and the prediction accuracy is again recorded. This decrease in accuracy is measured for every tree and averaged over all the trees (ESLII 612). This permuted average decrease in accuracy is shown for all variables in figure ? with the OOB prediction error measure being the MSE for the natural log of the original prices. Table and depth were the least important variables in this model with cut only having a slightly larger importance than depth or table. Notably, the most important categorical variable in this model appeared to be clarity.
 
