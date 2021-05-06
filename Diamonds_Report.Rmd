@@ -123,8 +123,8 @@ plot(GIAanatomy)
 
 ```
 
-The data was analyzed and predictve model was built using the statistical programming language R within Rstudio along with the following packages: tidyverse, GGally, tidymodels, doParallel, parallel, and vip. 
-
+The data was analyzed and a predictve model was built using the statistical programming language R within Rstudio along with the following packages: doParallel, GGally, rpart.plot, tidymodels, tidyverse, and vip. 
+ 
 ## Missing values and Outliers
 
 The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because total depth percentage, x, and y were not missing and the total depth percentage by definition was a calculation using x, y, and z, we thought it was appropriate to replace these 12 missing z values using the following formula derived from the total depth percentage calculation:
@@ -834,4 +834,44 @@ All the predictors were kept in the random forest model in case there was any co
 
 
 # Conclusion
+
+
+\newpage
+
+
+# References
+
+## Software
+
++ Barret Schloerke, Di Cook, Joseph Larmarange, Francois Briatte, Moritz Marbach, Edwin Thoen, Amos Elberg and Jason Crowley (2021). *GGally: Extension to 'ggplot2'.* R package version 2.1.1. https://CRAN.R-project.org/package=GGally
+
+
++ Brandon M. Greenwell and Bradley C. Boehmke (2020). *Variable Importance Plots—An Introduction to the vip Package.* The R Journal, 12(1), 343--366. URL https://doi.org/10.32614/RJ-2020-013.
+
+
++ Hao Zhu (2021). *kableExtra: Construct Complex Table with 'kable' and Pipe Syntax.* R package version 1.3.4. https://CRAN.R-project.org/package=kableExtra
+
+
++ Jeroen Ooms (2021). *magick: Advanced Graphics and Image-Processing in R.* R package version 2.7.1. https://CRAN.R-project.org/package=magick
+
+
++ Kuhn et al., (2020). *Tidymodels: a collection of packages for modeling and machine learning using tidyverse principles.* https://www.tidymodels.org
+
+
++ Microsoft Corporation and Steve Weston (2020). *doParallel: Foreach Parallel Adaptor for the 'parallel' Package.* R package version 1.0.16.
+https://CRAN.R-project.org/package=doParallel
+
+
++ R Core Team (2021). *R: A language and environment for statistical computing.* R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+
++ Stephen Milborrow (2020). *rpart.plot: Plot 'rpart' Models: An Enhanced Version of 'plot.rpart'.* R package version 3.0.9. https://CRAN.R-project.org/package=rpart.plot
+
+
++ Thomas Lin Pedersen (2020). *patchwork: The Composer of Plots.* R package version 1.1.1. https://CRAN.R-project.org/package=patchwork
+
+
++ Wickham et al., (2019). *Welcome to the tidyverse.* Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+
 
