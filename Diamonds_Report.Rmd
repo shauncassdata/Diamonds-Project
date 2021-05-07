@@ -1,7 +1,7 @@
 ---
-title: "Diamonds Analysis and Prediction"
+title: "Predicting the Price of Round Cut Diamonds"
+subtitle: "STAT 684"
 author: "Shaun Cass"
-date: "3/20/2021"
 output: pdf_document
 ---
 
@@ -129,7 +129,7 @@ plot(GIAanatomy)
 
 The data was analyzed and a predictive model was built using the statistical programming language R within Rstudio along with the following packages: doParallel, GGally, rpart.plot, tidymodels, tidyverse, and vip. 
  
-## Missing values and Outliers
+## Missing Values and Outliers
 
 The data initially had no missing values, but upon further inspection it was found that there were 20 rows where either the x, y, or z measurement had a value of zero. These zero values were replaced with missing values (NA in R) as it would not be possible for a round cut diamond to have zero length, width, or depth. 12 of these rows only contained one variable with a missing value: the z variable. Because the total depth percentage, x, and y were not missing and the total depth percentage by definition was a calculation using x, y, and z, it was considered appropriate to replace these 12 missing z values using the following formula derived from the total depth percentage calculation:
 $$z=\frac{depth\%*(x+y)}{2*100}$$
@@ -701,6 +701,7 @@ preds_price %>%
 
 As the original data set, the training set, and the test set mostly contained lower priced diamonds and lower to medium priced round cut diamonds may be more routinely bought and sold for the use of everyday jewelry, it was thought that the accuracy of the random forest model should be examined for certain price ranges. Tables 5 and 6 split the original prices of the diamonds into three categories based on the price of the observed diamonds: price < \$5000, \$5000 <= price < \$10000, and price >= \$10000. As expected, the predictions for the diamonds < \$5000 performed better overall compared to the other two categories when it came to the absolute difference between predicted and observed prices. Notably, 65.4%  of the diamonds in this category had an absolute difference of less than \$100. Also, 48.9% of the diamonds in the middle category had an absolute difference of less than \$300. When it came to the the absolute percent error, over 50% of the diamonds in the lower and medium price categories had an absolute error of less than 5%. Interestingly enough, over 75% of the diamonds in each category had an absolute error of less than 10%.
 
+
 ```{r split_df}
 # Tried to use count() here, but it was giving weird results
 split_df <- data.frame("price_group" = ordered(c("price < $5000", "$5000 <= price < $10000", "$10000 <= price"),
@@ -779,6 +780,8 @@ split_df %>%
 ```
 
 
+
+
 ```{r perc_split_df}
 # Figured out I have to unlist() count, but not enough time or energy to go back and clean up split_df.
 perc_split_df <- data.frame("price_group" = split_df$price_group,
@@ -815,6 +818,8 @@ perc_split_df <- data.frame("price_group" = split_df$price_group,
 colnames(perc_split_df) <- c("price_group", "abspercerr_1", "abspercerr_5", "abspercerr_10", "abspercerr_15", "abspercerr_20")
 ```
 
+
+
 ```{r perc split table}
 perc_split_df %>%
   mutate(across(2:6, ~round(.x*100, 1))) %>%
@@ -827,6 +832,7 @@ perc_split_df %>%
 ```
 
 
+
 Based on the information above, this model was reasonably accurate for a majority of the diamonds in the test set. There may need further improvements to account for outlying data points and higher priced diamonds. This predictive model may prove most useful for traders who are more likely to deal with diamonds usually in the lower to medium price range and will rarely if ever see a diamond in the higher price range. 
 
 ## Importance of the Predictors
@@ -835,10 +841,18 @@ All the predictors were kept in the random forest model in case there were any c
 
 ![Permutation importance plot for the fitted random forest. Importance is measured using the average decrease in OOB MSE.](Figures/permimportance.jpg)
 
+
 \newpage
 
 
 # Conclusion
+
+The random forest model created was a relatively accurate model to predict the price of round cut diamonds. It appeared to perform considerably better than other linear based models. It predicted the price of the diamonds to be within $286 of the original price for 75% of the data in the test set. Also, the absolute percent error of the predictions was less than 10% for 81% of the predictions. The model worked better for lower priced diamonds than it did for higher priced diamonds. Future models may need to use better outlier detection and handling methods to deal with this issue. Also improvements could be possibly made even with the current model's parameters if a larger sample set containing more of these higher priced diamonds is found. As the random forest model was a tree ensemble model, other similar models such as an extreme gradient boosted tree model may also improve accuracy of the predictions. 
+
+It was also found that the table percentage and the total depth percentage were not particularly important when it came to predictions. Future research should look into possibly excluding these predictors when predicting the price of round cut diamonds. 
+
+It was the hope of the author that this model proves useful in both helping to predict round cut diamonds and to act as a stepping stone for future models on similar data.
+
 
 
 \newpage
