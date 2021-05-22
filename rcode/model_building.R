@@ -432,39 +432,31 @@ save(rf_fit_tune, file = "Data/rf_fit_tune.Rda")
 
 # Comparing all of the models so far
 
+pull_mean_stderr <- function(x, pull_mean = TRUE){
+  if(pull_mean){
+    x %>%
+      show_best(metric = "rmse", n = 1) %>%
+      pull(mean)
+  }
+  else{
+    x %>%
+      show_best(metric = "rmse", n = 1) %>%
+      pull(std_err)
+  }
+}
+
+ridge_glmnet_mods <- list(ridge_fit1_rs, ridge_fit2_rs, ridge_fit3_rs, ridge_fit4_rs,
+                          ridge_fit5_rs, ridge_fit6_rs, ridge_fit7_rs, glmnet_fit1_rs,
+                          glmnet_fit2_rs, glmnet_fit3_rs, glmnet_fit4_rs, glmnet_fit5_rs,
+                          glmnet_fit6_rs, glmnet_fit7_rs)
+
 the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
                                "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
                                "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
                                "Glmnet Fit3", "Glmnet Fit4", "Glmnet Fit5",
                                "Glmnet Fit6", "Glmnet Fit7"),
-                   "Mean" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                              glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean)),
-                   "std_err" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                 glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err)))
+                   "Mean" = map_dbl(ridge_glmnet_mods, pull_mean_stderr),
+                   "std_err" = map_dbl(ridge_glmnet_mods, pull_mean_stderr, pull_mean = FALSE))
 rank_ridge <- the_best[1:7,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
 rank_glmnet <- the_best[8:14,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
 the_best$rank <- c(rank_ridge, rank_glmnet)
@@ -605,49 +597,41 @@ preds_price <- last_rf_fit %>% collect_predictions %>%
 
 save(preds_price, file = "Data/preds_price.Rda")
 
-preds_price %>%
-  ggplot(aes(x = .pred, y = price)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1)
-
-preds_price %>% rmse(truth  = price, estimate = .pred)
-
-preds_price <- preds_price %>% mutate(absdiff = abs(.pred - price))
-
-preds_price %>%
-  ggplot(aes(absdiff)) +
-  geom_density()
+# Examining the results of the final model
+## rounded the predictions to match the original format of the price
 
 preds_price <- preds_price %>%
-  mutate("Price_range" = case_when(price < 5000 ~ "Price < $5000",
-                                   5000 <= price & price < 10000 ~ "$5000 <= Price < 10000",
-                                   price >= 10000 ~ "Price >= 10000"))
+  mutate(.pred = round(.pred, 0)) %>%
+  mutate(absdiff = round(abs(.pred - price), 0))
 
-preds_price %>%
-  group_by(Price_range) %>%
-  summarise(rmse = sqrt((1/n())*sum((.pred - price)^2)))
+final_rmse <- preds_price %>% rmse(truth = price, estimate = .pred)
+
+a <- test_data[!complete.cases(test_data),] %>% pull(id)
+ggplot() +
+  geom_point(mapping = aes(x = preds_price %>% filter(!(.row %in% a)) %>% pull(price),
+                           y = preds_price %>% filter(!(.row %in% a)) %>% pull(.pred))) +
+  geom_point(mapping = aes(x = preds_price %>% filter(.row %in% a) %>% pull(price),
+                           y = preds_price %>% filter(.row %in% a) %>% pull(.pred), fill = "Contained NA"), shape = 21) +
+  geom_abline(aes(intercept = 0, slope = 1, color = "red"), linetype = "dashed") +
+  ylab("Predicted Price (US Dollars)") +
+  xlab("Observed Price (US Dollars)") +
+  scale_color_manual(name = "Ratio", values = c("red" = "red"), labels = c("1:1")) +
+  scale_fill_manual(name = NULL, values = c("Contained NA" = "cyan"), labels = "Contained NAs") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  scale_y_continuous(labels = scales::label_dollar()) +
+  geom_text(aes(x = 2500, y = 15000,
+                label = paste0("RMSE = ","$", round(final_rmse$.estimate, 0)))) +
+  theme_bw()
 
 
+# Distribution of the absolute difference between predicted price and observed
 preds_price %>%
-  filter(absdiff <= 100) %>%
-  count()/10784
-preds_price %>%
-  filter(absdiff <= 200) %>%
-  count()/10784
-preds_price %>%
-  filter(absdiff <= 300) %>%
-  count()/10784
-preds_price %>%
-  filter(absdiff <= 400) %>%
-  count()/10784
-preds_price %>%
-  filter(absdiff <= 500) %>%
-  count()/10784
+  ggplot(aes(absdiff)) +
+  geom_density( fill = "mediumslateblue", alpha = 0.8) +
+  geom_vline(aes(xintercept = mean(absdiff), color = "Mean"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(absdiff, 0.5), color = "Median"), linetype = "twodash") +
+  ylab("Density") +
+  xlab("Absolute Difference Between Predicted and Observed Prices") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  theme_minimal()
 
-diamonds %>% filter(price < 5000) %>% count()/53940
-diamonds %>% filter(price >= 5000 & price < 10000) %>% count()/53940
-diamonds %>% filter(price >= 10000) %>% count()/53940
-
-test_data %>% filter(exp(price) < 5000) %>% count()/10784
-test_data %>% filter(exp(price) >= 5000 & price < 10000) %>% count()/10784
-test_data %>% filter(exp(price) >= 10000) %>% count()/10784
