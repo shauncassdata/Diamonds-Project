@@ -635,3 +635,24 @@ preds_price %>%
   scale_x_continuous(labels = scales::label_dollar()) +
   theme_minimal()
 
+# Distribution of percent error between predicted price and observed
+preds_price <- preds_price %>%
+  mutate(percent_err = ((.pred - price)/price)*100)
+
+preds_price %>%
+  ggplot(aes(x = percent_err)) +
+  geom_density(fill = "olivedrab3", alpha = 0.8) +
+  theme_minimal() +
+  scale_x_continuous(labels = scales::label_percent(scale = 1)) +
+  annotate("segment", x = -20, y = 0.02, xend = -40, yend = 0.02,
+           arrow = arrow(length = unit(0.5, "cm")), color = "red") +
+  annotate("segment", x = 20, y = 0.02, xend = 40, yend = 0.02,
+           arrow = arrow(length = unit(0.5, "cm")), color = "blue") +
+  annotate("text", x = -30, y = 0.025, label = "Model predicted the price\nto be lower than it was",
+           size = 2.5) +
+  annotate("text", x = 30, y = 0.025, label = "Model predicted the price\nto be higher than it was",
+           size = 2.5) +
+  geom_vline(aes(xintercept = quantile(percent_err, 0.25), color = "25th Percentile"), linetype = "dashed") +
+  geom_vline(aes(xintercept = quantile(percent_err, 0.75), color = "75th Percentile"), linetype = "twodash") +
+  xlab("Percent Error") +
+  ylab("Density")
