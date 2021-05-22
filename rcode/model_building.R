@@ -428,6 +428,75 @@ stopCluster(cl = cl)
 save(rf_fit_tune, file = "Data/rf_fit_tune.Rda")
 
 
+
+
+# Comparing all of the models so far
+
+the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
+                               "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
+                               "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
+                               "Glmnet Fit3", "Glmnet Fit4", "Glmnet Fit5",
+                               "Glmnet Fit6", "Glmnet Fit7"),
+                   "Mean" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
+                              glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean)),
+                   "std_err" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
+                                 glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err)))
+rank_ridge <- the_best[1:7,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
+rank_glmnet <- the_best[8:14,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
+the_best$rank <- c(rank_ridge, rank_glmnet)
+best_trees <- tibble("Model" = c(rep("Tree fit", 7), rep("Random Forest Fit", 7)),
+                     "Mean" = c(tree_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(mean),
+                                rf_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(mean)),
+                     "std_err" = c(tree_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(std_err),
+                                   rf_fit_tune %>% show_best(metric = "rmse", n = 7) %>% pull(std_err)),
+                     "rank" = rep(1:7, 2))
+the_best <- bind_rows(the_best, best_trees)
+the_best$rank <- factor(the_best$rank)
+the_best$model_type <- c(rep("Linear Models", 14), rep("Tree Models", 14))
+
+the_best %>%
+  ggplot(aes(x = Model, y = Mean, group = rank, fill = rank)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(aes(ymin = Mean - std_err, ymax = Mean + std_err),
+                position = "dodge", color = "black") +
+  ylab("Mean RMSE") +
+  labs(caption = "Error bars are +/- 1 standard error.") +
+  theme_classic()  +
+  scale_fill_brewer(type = "seq", palette = "Paired") +
+  facet_grid(~ model_type, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1)) 
+
+
+
+
+
+# Examining the random forest models
+
+
 rf_fit_tune %>%
   collect_metrics() %>%
   filter(.metric == "rmse") %>%
