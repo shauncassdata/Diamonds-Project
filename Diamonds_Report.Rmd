@@ -497,39 +497,31 @@ Here $n$ is the sample size of the fold left out for prediction, $Y_i$ is the ob
 
 
 ```{r seven best models graph, fig.cap="Comparison of the seven best linear and tree based models found using 10-fold CV. The best model was chosen for each linear fit and compared to the seven best regression trees and random forests."}
+pull_mean_stderr <- function(x, pull_mean = TRUE){
+  if(pull_mean){
+    x %>%
+      show_best(metric = "rmse", n = 1) %>%
+      pull(mean)
+  }
+  else{
+    x %>%
+      show_best(metric = "rmse", n = 1) %>%
+      pull(std_err)
+  }
+}
+
+ridge_glmnet_mods <- list(ridge_fit1_rs, ridge_fit2_rs, ridge_fit3_rs, ridge_fit4_rs,
+                          ridge_fit5_rs, ridge_fit6_rs, ridge_fit7_rs, glmnet_fit1_rs,
+                          glmnet_fit2_rs, glmnet_fit3_rs, glmnet_fit4_rs, glmnet_fit5_rs,
+                          glmnet_fit6_rs, glmnet_fit7_rs)
+
 the_best <- tibble("Model" = c("Ridge Fit1", "Ridge Fit2", "Ridge Fit3",
                                "Ridge Fit4", "Ridge Fit5", "Ridge Fit6",
                                "Ridge Fit7", "Glmnet Fit1", "Glmnet Fit2",
                                "Glmnet Fit3", "Glmnet Fit4", "Glmnet Fit5",
                                "Glmnet Fit6", "Glmnet Fit7"),
-                    "Mean" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean),
-                               glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(mean)),
-                    "std_err" = c(ridge_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  ridge_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit1_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit2_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit3_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit4_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit5_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit6_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err),
-                                  glmnet_fit7_rs %>% show_best(metric = "rmse", n = 1) %>% pull(std_err)))
+                   "Mean" = map_dbl(ridge_glmnet_mods, pull_mean_stderr),
+                   "std_err" = map_dbl(ridge_glmnet_mods, pull_mean_stderr, pull_mean = FALSE))
 rank_ridge <- the_best[1:7,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
 rank_glmnet <- the_best[8:14,] %>% mutate(rank = dense_rank(Mean)) %>% pull(rank)
 the_best$rank <- c(rank_ridge, rank_glmnet)
